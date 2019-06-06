@@ -403,10 +403,15 @@ class SchemaField extends React.Component {
     );
   }
 
+  blockList = ["series", "originalSchemaVersion"];
+  allowList = [];
+
   render() {
     console.log(407);
     console.log(this.props);
-    return this.props.name === undefined || this.props.name !== 'series' ? SchemaFieldRender(this.props) : null;
+    return !this.blockList.includes(this.props.name) ||
+      this.allowList.includes(this.props.name) ?
+        SchemaFieldRender(this.props) : null;
   }
 }
 
