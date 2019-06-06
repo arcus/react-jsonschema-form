@@ -404,7 +404,9 @@ class SchemaField extends React.Component {
   }
 
   render() {
-    return SchemaFieldRender(this.props);
+    console.log(407);
+    console.log(this.props);
+    return this.props.name === undefined || this.props.name !== 'series' ? SchemaFieldRender(this.props) : null;
   }
 }
 
