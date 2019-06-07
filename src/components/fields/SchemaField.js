@@ -244,19 +244,10 @@ function SchemaFieldRender(props) {
   } = registry;
   let idSchema = props.idSchema;
   const schema = retrieveSchema(props.schema, definitions, formData);
-  console.log(247);
-  console.log('name:');
-  console.log(name);
-  // console.log('idPrefix');
-  // console.log(idPrefix);
-  // console.log('pre idSchema:');
-  // console.log(props.idSchema);
   idSchema = mergeObjects(
     toIdSchema(schema, null, definitions, formData, idPrefix),
     idSchema
   );
-  console.log('post idSchema:');
-  console.log(idSchema);
   const FieldComponent = getFieldComponent(schema, uiSchema, idSchema, fields);
   const { DescriptionField } = fields;
   const disabled = Boolean(props.disabled || uiSchema["ui:disabled"]);
@@ -402,6 +393,8 @@ function SchemaFieldRender(props) {
   );
 }
 
+const isNullOrTrue = value => value === true || value === null;
+
 class SchemaField extends React.Component {
   shouldComponentUpdate(nextProps, nextState) {
     // if schemas are equal idSchemas will be equal as well,
@@ -412,22 +405,42 @@ class SchemaField extends React.Component {
     );
   }
 
-  denyList = ["series", "originalSchemaVersion"];
-  allowList = [];
+  allowList = [
+    ["accession", "schemaVersionNumber"],
+    ["accession", "DCASigner", "affiliation", "affiliationDivision"],
+    ["accession", "DCASigner", "affiliation", "contactInfo"]
+  ];
 
   render() {
     console.log(407);
-    if (this.denyList.includes(this.props.name)) {
-        console.log(this.props.idSchema);
+    // if (this.denyList.includes(this.props.name)) {
+    //     console.log(this.props.idSchema);
+    //   }
+    console.log(this.props.idSchema.$path);
+    console.log(this.allowList);
+    const allowListComparison = this.allowList.map(
+      allowSubList => {
+        return allowSubList.map(
+          (value, index) => {
+            // console.log(`Comparison is ${this.props.idSchema.$path[index]} vs. ${value}`);
+            if (
+              this.props.idSchema.$path &&
+              this.props.idSchema.$path[index]
+            ) {
+              return this.props.idSchema.$path[index] === value;
+            }
+            return null;
+          }
+        ).every(isNullOrTrue);
       }
-    return !this.denyList.includes(this.props.name) ||
-      this.allowList.includes(this.props.name) ?
-        SchemaFieldRender(this.props) : (
-          null
-          // <DefaultTemplate id={this.props.idSchema.$id}>
-          //   {this.props.name} (Suppressed)
-          // </DefaultTemplate>
-        );
+    );
+    console.log(allowListComparison);
+    // Allow if this is the root element or if the element is allowed, or is a
+    // parent of an allowed element:
+    return this.props.idSchema.$path.length === 0 ||
+        allowListComparison.some(isNullOrTrue) ?
+      SchemaFieldRender(this.props) :
+      null;
   }
 }
 

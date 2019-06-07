@@ -375,7 +375,6 @@ class ArrayField extends Component {
         const itemSchema = retrieveSchema(schema.items, definitions, item);
         const itemErrorSchema = errorSchema ? errorSchema[index] : undefined;
         const itemIdPrefix = idSchema.$id + "_" + index;
-        console.log(375);
         const itemIdSchema = toIdSchema(
           itemSchema,
           itemIdPrefix,
@@ -549,7 +548,6 @@ class ArrayField extends Component {
           ? retrieveSchema(schema.additionalItems, definitions, item)
           : itemSchemas[index];
         const itemIdPrefix = idSchema.$id + "_" + index;
-        console.log(550);
         const itemIdSchema = toIdSchema(
           itemSchema,
           itemIdPrefix,

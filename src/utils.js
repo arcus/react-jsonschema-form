@@ -725,27 +725,15 @@ export function toIdSchema(
   idPrefix = "root",
   itemPath = [],
 ) {
-  // console.log(728);
-  // console.log({
-  //   id: id,
-  //   idPrefix: idPrefix
-  // });
-  console.log(`itemPath is ${itemPath}`);
   const idSchema = {
     $id: id || idPrefix,
     $path: itemPath,
   };
-  console.log('itemPath:');
-  console.log(itemPath);
   if ("$ref" in schema || "dependencies" in schema) {
     const _schema = retrieveSchema(schema, definitions, formData);
-    console.log(739);
-    console.log(`itemPath is ${itemPath}`);
     return toIdSchema(_schema, id, definitions, formData, idPrefix, itemPath);
   }
   if ("items" in schema && !schema.items.$ref) {
-    console.log(743);
-    console.log(`itemPath is ${itemPath}`);
     return toIdSchema(
       schema.items,
       id,
@@ -761,10 +749,7 @@ export function toIdSchema(
   for (const name in schema.properties || {}) {
     const field = schema.properties[name];
     const fieldId = idSchema.$id + "_" + name;
-    console.log(759);
-    console.log(idSchema);
     const fieldPath = [...idSchema.$path, name];
-    console.log(`fieldPath is ${fieldPath}`);
     idSchema[name] = toIdSchema(
       field,
       fieldId,
@@ -776,7 +761,6 @@ export function toIdSchema(
       fieldPath
     );
   }
-  console.log(770);
   return idSchema;
 }
 
