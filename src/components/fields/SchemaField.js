@@ -408,9 +408,16 @@ class SchemaField extends React.Component {
   }
 
   allowList = [
-    ["accession", "schemaVersionNumber"],
-    ["accession", "DCASigner", "affiliation", "affiliationDivision"],
-    ["accession", "DCASigner", "contactInfo"]
+    {
+      path: ["accession", "schemaVersionNumber"]
+    },
+    {
+      path: ["accession", "DCASigner", "affiliation", "affiliationDivision"]
+    },
+    {
+      path: ["accession", "DCASigner", "contactInfo"],
+      data: { email: "helbigi@email.chop.edu" }
+    }
   ];
 
   render() {
@@ -421,14 +428,44 @@ class SchemaField extends React.Component {
     console.log(this.props.idSchema.$path);
     console.log(this.allowList);
     const allowListComparison = this.allowList.map(
-      allowSubList => {
-        return allowSubList.map(
+      (allowSubList, index) => {
+        return allowSubList.path && allowSubList.path.map(
           (value, index) => {
             // console.log(`Comparison is ${this.props.idSchema.$path[index]} vs. ${value}`);
             if (
               this.props.idSchema.$path &&
               this.props.idSchema.$path[index]
             ) {
+              const allowListData = this.allowList[index] &&
+                this.allowList[index].data ?
+                  this.allowList[index].data :
+                  null;
+
+              console.log(444);
+              console.log(index);
+              console.log(allowListData);
+
+              if (
+                typeof allowListData === 'object' &&
+                allowListData !== null
+              ) {
+                console.log('Checking for data match...');
+
+                return Object.keys(allowListData).map(key => {
+                  console.log(451);
+                  if (this.props.formData && this.props.formData[key]) {
+                    console.log(`comparison is between ${this.props.formData[key]} and ${allowListData[key]}`);
+                  }
+                  console.log(this.props.formData &&
+                    this.props.formData[key] !== undefined &&
+                    this.props.formData[key] === allowListData[key]);
+                  // console.log(this.props.formData[key]);
+                  // console.log(allowListData[key]);
+                  return this.props.formData &&
+                    this.props.formData[key] !== undefined &&
+                    this.props.formData[key] === allowListData[key];
+                }).every(isNullOrTrue);
+              }
               return this.props.idSchema.$path[index] === value;
             }
             return null;
@@ -436,7 +473,12 @@ class SchemaField extends React.Component {
         ).every(isNullOrTrue);
       }
     );
+    console.log('allowListComparison:');
     console.log(allowListComparison);
+    if (allowListComparison.some(isNullOrTrue)) {
+      console.log('this.props:');
+      console.log(this.props);
+    }
     // Allow if this is the root element or if the element is allowed, or is a
     // parent of an allowed element:
     return this.props.idSchema.$path.length === 0 ||
