@@ -294,6 +294,7 @@ function SchemaFieldRender(props) {
 
   const { type } = schema;
   const id = idSchema.$id;
+  const path = idSchema.$path;
   const label =
     uiSchema["ui:title"] || props.schema.title || schema.title || name;
   const description =
@@ -327,6 +328,7 @@ function SchemaFieldRender(props) {
     errors: <ErrorList errors={errors} />,
     rawErrors: errors,
     id,
+    path,
     label,
     hidden,
     onKeyChange,
@@ -408,7 +410,7 @@ class SchemaField extends React.Component {
   allowList = [
     ["accession", "schemaVersionNumber"],
     ["accession", "DCASigner", "affiliation", "affiliationDivision"],
-    ["accession", "DCASigner", "affiliation", "contactInfo"]
+    ["accession", "DCASigner", "contactInfo"]
   ];
 
   render() {

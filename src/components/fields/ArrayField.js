@@ -380,7 +380,8 @@ class ArrayField extends Component {
           itemIdPrefix,
           definitions,
           item,
-          idPrefix
+          idPrefix,
+          idSchema.$path
         );
         return this.renderArrayFieldItem({
           index,
@@ -553,7 +554,8 @@ class ArrayField extends Component {
           itemIdPrefix,
           definitions,
           item,
-          idPrefix
+          idPrefix,
+          idSchema.$path
         );
         const itemUiSchema = additional
           ? uiSchema.additionalItems || {}
