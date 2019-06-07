@@ -244,10 +244,19 @@ function SchemaFieldRender(props) {
   } = registry;
   let idSchema = props.idSchema;
   const schema = retrieveSchema(props.schema, definitions, formData);
+  console.log(247);
+  console.log('name:');
+  console.log(name);
+  // console.log('idPrefix');
+  // console.log(idPrefix);
+  // console.log('pre idSchema:');
+  // console.log(props.idSchema);
   idSchema = mergeObjects(
     toIdSchema(schema, null, definitions, formData, idPrefix),
     idSchema
   );
+  console.log('post idSchema:');
+  console.log(idSchema);
   const FieldComponent = getFieldComponent(schema, uiSchema, idSchema, fields);
   const { DescriptionField } = fields;
   const disabled = Boolean(props.disabled || uiSchema["ui:disabled"]);
@@ -403,15 +412,22 @@ class SchemaField extends React.Component {
     );
   }
 
-  blockList = ["series", "originalSchemaVersion"];
+  denyList = ["series", "originalSchemaVersion"];
   allowList = [];
 
   render() {
     console.log(407);
-    console.log(this.props);
-    return !this.blockList.includes(this.props.name) ||
+    if (this.denyList.includes(this.props.name)) {
+        console.log(this.props.idSchema);
+      }
+    return !this.denyList.includes(this.props.name) ||
       this.allowList.includes(this.props.name) ?
-        SchemaFieldRender(this.props) : null;
+        SchemaFieldRender(this.props) : (
+          null
+          // <DefaultTemplate id={this.props.idSchema.$id}>
+          //   {this.props.name} (Suppressed)
+          // </DefaultTemplate>
+        );
   }
 }
 

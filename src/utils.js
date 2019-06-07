@@ -722,17 +722,38 @@ export function toIdSchema(
   id,
   definitions,
   formData = {},
-  idPrefix = "root"
+  idPrefix = "root",
+  itemPath = [],
 ) {
+  // console.log(728);
+  // console.log({
+  //   id: id,
+  //   idPrefix: idPrefix
+  // });
+  console.log(`itemPath is ${itemPath}`);
   const idSchema = {
     $id: id || idPrefix,
+    $path: itemPath,
   };
+  console.log('itemPath:');
+  console.log(itemPath);
   if ("$ref" in schema || "dependencies" in schema) {
     const _schema = retrieveSchema(schema, definitions, formData);
-    return toIdSchema(_schema, id, definitions, formData, idPrefix);
+    console.log(739);
+    console.log(`itemPath is ${itemPath}`);
+    return toIdSchema(_schema, id, definitions, formData, idPrefix, itemPath);
   }
   if ("items" in schema && !schema.items.$ref) {
-    return toIdSchema(schema.items, id, definitions, formData, idPrefix);
+    console.log(743);
+    console.log(`itemPath is ${itemPath}`);
+    return toIdSchema(
+      schema.items,
+      id,
+      definitions,
+      formData,
+      idPrefix,
+      itemPath
+    );
   }
   if (schema.type !== "object") {
     return idSchema;
@@ -740,6 +761,10 @@ export function toIdSchema(
   for (const name in schema.properties || {}) {
     const field = schema.properties[name];
     const fieldId = idSchema.$id + "_" + name;
+    console.log(759);
+    console.log(idSchema);
+    const fieldPath = [...idSchema.$path, name];
+    console.log(`fieldPath is ${fieldPath}`);
     idSchema[name] = toIdSchema(
       field,
       fieldId,
@@ -747,9 +772,11 @@ export function toIdSchema(
       // It's possible that formData is not an object -- this can happen if an
       // array item has just been added, but not populated with data yet
       (formData || {})[name],
-      idPrefix
+      idPrefix,
+      fieldPath
     );
   }
+  console.log(770);
   return idSchema;
 }
 

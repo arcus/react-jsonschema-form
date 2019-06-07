@@ -24,7 +24,7 @@ function ArrayFieldTitle({ TitleField, idSchema, title, required }) {
     return null;
   }
   const id = `${idSchema.$id}__title`;
-  return <TitleField id={id} title={title} required={required} />;
+  return <TitleField id={id} path={idSchema.$path} title={title} required={required} />;
 }
 
 function ArrayFieldDescription({ DescriptionField, idSchema, description }) {
@@ -32,7 +32,11 @@ function ArrayFieldDescription({ DescriptionField, idSchema, description }) {
     return null;
   }
   const id = `${idSchema.$id}__description`;
-  return <DescriptionField id={id} description={description} />;
+  return <DescriptionField
+    id={id}
+    path={idSchema.$path}
+    description={description}
+  />;
 }
 
 // Used in the two templates
@@ -371,6 +375,7 @@ class ArrayField extends Component {
         const itemSchema = retrieveSchema(schema.items, definitions, item);
         const itemErrorSchema = errorSchema ? errorSchema[index] : undefined;
         const itemIdPrefix = idSchema.$id + "_" + index;
+        console.log(375);
         const itemIdSchema = toIdSchema(
           itemSchema,
           itemIdPrefix,
@@ -544,6 +549,7 @@ class ArrayField extends Component {
           ? retrieveSchema(schema.additionalItems, definitions, item)
           : itemSchemas[index];
         const itemIdPrefix = idSchema.$id + "_" + index;
+        console.log(550);
         const itemIdSchema = toIdSchema(
           itemSchema,
           itemIdPrefix,
