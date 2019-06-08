@@ -447,9 +447,17 @@ class SchemaField extends React.Component {
 
               if (
                 typeof allowListData === 'object' &&
-                allowListData !== null
+                allowListData !== null &&
+                // Only perform the data check if this is the top-level element
+                // for the path:
+                this.allowList[index].path.length ===
+                  this.props.idSchema.$path[index]
               ) {
                 console.log('Checking for data match...');
+                if (this.props.formData) {
+                  console.log('formData:');
+                  console.log(this.props.formData);
+                }
 
                 return Object.keys(allowListData).map(key => {
                   console.log(451);
@@ -461,9 +469,11 @@ class SchemaField extends React.Component {
                     this.props.formData[key] === allowListData[key]);
                   // console.log(this.props.formData[key]);
                   // console.log(allowListData[key]);
-                  return this.props.formData &&
-                    this.props.formData[key] !== undefined &&
-                    this.props.formData[key] === allowListData[key];
+                  if (this.props.formData &&
+                    this.props.formData[key] !== undefined
+                  ) {
+                    return this.props.formData[key] === allowListData[key];
+                  }
                 }).every(isNullOrTrue);
               }
               return this.props.idSchema.$path[index] === value;
