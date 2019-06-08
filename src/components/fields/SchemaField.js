@@ -445,15 +445,36 @@ class SchemaField extends React.Component {
               console.log(index);
               console.log(allowListData);
 
+              const doesPathElementMatch = this.props.idSchema.$path[index] ===
+                value;
+
+              // console.log('doesPathElementMatch');
+              // console.log(doesPathElementMatch);
+              // console.log(this.props.idSchema.$path[index]);
+              // console.log(value);
+              // console.log(typeof allowListData);
+              // console.log(allowListData);
+              // console.log(
+              //   doesPathElementMatch &&
+              //   typeof allowListData === 'object' &&
+              //   allowListData !== null &&
+              //   // Only perform the data check if this is the top-level element
+              //   // for the path:
+              //   allowSubList.path.length === this.props.idSchema.$path[index]
+              // );
+
               if (
+                doesPathElementMatch &&
                 typeof allowListData === 'object' &&
                 allowListData !== null &&
                 // Only perform the data check if this is the top-level element
                 // for the path:
-                this.allowList[index].path.length ===
-                  this.props.idSchema.$path[index]
+                allowSubList.path &&
+                allowSubList.path.length === this.props.idSchema.$path.length
               ) {
                 console.log('Checking for data match...');
+                console.log(allowSubList.path);
+                console.log(this.props.idSchema.$path);
                 if (this.props.formData) {
                   console.log('formData:');
                   console.log(this.props.formData);
@@ -476,7 +497,7 @@ class SchemaField extends React.Component {
                   }
                 }).every(isNullOrTrue);
               }
-              return this.props.idSchema.$path[index] === value;
+              return doesPathElementMatch;
             }
             return null;
           }
