@@ -44,7 +44,9 @@ function performMaskComparison(
   // ];
   maskList,
   idSchema,
-  formData
+  formData,
+  // Whether to allow or deny the masked elements:
+  deny = false
 ) {
   return maskList.map(
     (maskSubList, index) => {
@@ -80,6 +82,15 @@ function performMaskComparison(
             //   // for the path:
             //   maskSubList.path.length === idSchema.$path[index]
             // );
+            //
+            console.log(84);
+            console.log(maskSubList.path);
+            console.log(idSchema.$path);
+
+            const isThisFullPath = maskSubList.path &&
+              maskSubList.path.length === idSchema.$path.length &&
+              JSON.stringify(maskSubList.path) ===
+                 JSON.stringify(idSchema.$path);
 
             if (
               doesPathElementMatch &&
@@ -88,10 +99,7 @@ function performMaskComparison(
               // this.props.schema.type !== "array" &&
               // Only perform the data check if this is the top-level element
               // for the path:
-              maskSubList.path &&
-              maskSubList.path.length === idSchema.$path.length &&
-              maskSubList.path[maskSubList.path.length - 1] ===
-                 idSchema.$path[idSchema.$path.length - 1]
+              isThisFullPath
             ) {
               console.log('Checking for data match...');
               console.log(maskListData);
@@ -111,6 +119,19 @@ function performMaskComparison(
                 // Handle, for example, strings:
                 JSON.stringify(maskListData) ===
                   JSON.stringify(formData);
+            }
+
+            if (deny) {
+              // If deny is true, we only want to return true when we are
+              // comparing a complete path, in the if() statement above.
+              // Otherwise, whereas for deny=false, where we return
+              // doesPathElementMatch below, we should always return false
+              // here, to indicate not to deny this element:
+              if (isThisFullPath) {
+                return true;
+              }
+
+              return false;
             }
             return doesPathElementMatch;
           }
@@ -488,6 +509,7 @@ function SchemaFieldRender(props) {
 }
 
 const isNullOrTrue = value => value === true || value === null;
+const isNullOrFalse = value => value === false || value === null;
 
 class SchemaField extends React.Component {
   shouldComponentUpdate(nextProps, nextState) {
@@ -504,11 +526,14 @@ class SchemaField extends React.Component {
       path: ["accession", "schemaVersionNumber"]
     },
     {
-      path: ["accession", "DCASigner", "affiliation", "affiliationDivision"]
+      path: ["accession", "DCASigner", "affiliation"]
     },
     {
       path: ["accession", "DCASigner", "contactInfo"],
       data: { email: "test@example.com" }
+    },
+    {
+      path: ["accession", "accessionNumber"]
     }
   ];
 
@@ -567,23 +592,32 @@ class SchemaField extends React.Component {
     // if (this.denyList.includes(this.props.name)) {
     //     console.log(this.props.idSchema);
     //   }
+    // console.log(this.props.idSchema.$path);
+    // console.log(this.allowList);
     console.log(this.props.idSchema.$path);
-    console.log(this.allowList);
-    const allowListComparison = performMaskComparison(
+    const allowListComparison = this.allowList ? performMaskComparison(
       this.allowList,
       this.props.idSchema,
       this.props.formData
-    );
+    ) : [true];
     console.log('allowListComparison:');
     console.log(allowListComparison);
-    if (allowListComparison.some(isNullOrTrue)) {
-      console.log('this.props:');
-      console.log(this.props);
-    }
+    const denyListComparison = this.denyList ?
+      allowListComparison.some(isNullOrTrue) && performMaskComparison(
+        this.denyList,
+        this.props.idSchema,
+        this.props.formData,
+        true
+      ) : [false];
+      console.log('denyListComparison:');
+      console.log(denyListComparison);
     // Allow if this is the root element or if the element is allowed, or is a
     // parent of an allowed element:
     return this.props.idSchema.$path.length === 0 ||
-        allowListComparison.some(isNullOrTrue) ?
+        (
+          allowListComparison.some(isNullOrTrue) &&
+          denyListComparison.every(isNullOrFalse)
+        ) ?
       SchemaFieldRender(this.props) :
       null;
   }
