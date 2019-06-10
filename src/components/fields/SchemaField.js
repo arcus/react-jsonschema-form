@@ -476,9 +476,8 @@ class SchemaField extends React.Component {
               this.props.idSchema.$path &&
               this.props.idSchema.$path[index]
             ) {
-              const allowListData = this.allowList[index] &&
-                this.allowList[index].data ?
-                  this.allowList[index].data :
+              const allowListData = allowSubList.data ?
+                  allowSubList.data :
                   null;
 
               console.log(444);
@@ -511,36 +510,24 @@ class SchemaField extends React.Component {
                 // Only perform the data check if this is the top-level element
                 // for the path:
                 allowSubList.path &&
-                allowSubList.path.length === this.props.idSchema.$path.length // &&
-                // allowSubList.path[allowSubList.path.length - 1] ===
-                //   this.props.idSchema.$path[this.props.idSchema.$path.length - 1]
+                allowSubList.path.length === this.props.idSchema.$path.length &&
+                allowSubList.path[allowSubList.path.length - 1] ===
+                   this.props.idSchema.$path[this.props.idSchema.$path.length - 1]
               ) {
                 console.log('Checking for data match...');
                 console.log(allowListData);
-                console.log('this.props');
-                console.log(this.props);
-                // console.log(this.props.idSchema.$path);
+                // console.log('this.props:');
+                // console.log(this.props);
+                console.log("this.props.idSchema.$path:");
+                console.log(this.props.idSchema.$path);
                 // if (this.props.formData) {
                 //   console.log('formData:');
                 //   console.log(this.props.formData);
                 // }
 
-                return Object.keys(allowListData).map(key => {
-                  console.log(451);
-                  if (this.props.formData && this.props.formData[key]) {
-                    console.log(`comparison is between ${this.props.formData[key]} and ${allowListData[key]}`);
-                  }
-                  console.log(this.props.formData &&
-                    this.props.formData[key] !== undefined &&
-                    this.props.formData[key] === allowListData[key]);
-                  // console.log(this.props.formData[key]);
-                  // console.log(allowListData[key]);
-                  if (this.props.formData &&
-                    this.props.formData[key] !== undefined
-                  ) {
-                    return this.props.formData[key] === allowListData[key];
-                  }
-                }).every(isNullOrTrue);
+                return JSON.stringify(
+                  mergeObjects(this.props.formData, allowListData)
+                ) === JSON.stringify(this.props.formData);
               }
               return doesPathElementMatch;
             }
