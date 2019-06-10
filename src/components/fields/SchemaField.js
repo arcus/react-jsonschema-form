@@ -29,6 +29,98 @@ const COMPONENT_TYPES = {
   null: "NullField",
 };
 
+function performMaskComparison(
+  // Expected to be of the form: [
+  //   {
+  //     path: ["path", "one"]
+  //   },
+  //   {
+  //     path: ["path", "with", "four", "elements"]
+  //   },
+  //   {
+  //     path: ["another", "example", "path"],
+  //     data: { email: "test@example.com" }
+  //   }
+  // ];
+  maskList,
+  idSchema,
+  formData
+) {
+  return maskList.map(
+    (maskSubList, index) => {
+      return maskSubList.path && maskSubList.path.map(
+        (value, index) => {
+          // console.log(`Comparison is ${idSchema.$path[index]} vs. ${value}`);
+          if (
+            idSchema.$path &&
+            idSchema.$path[index]
+          ) {
+            const maskListData = maskSubList.data ?
+                maskSubList.data :
+                null;
+
+            console.log(444);
+            console.log(index);
+            console.log(maskListData);
+
+            const doesPathElementMatch = idSchema.$path[index] ===
+              value;
+
+            console.log('doesPathElementMatch');
+            console.log(doesPathElementMatch);
+            // console.log(idSchema.$path[index]);
+            // console.log(value);
+            // console.log(typeof maskListData);
+            // console.log(maskListData);
+            // console.log(
+            //   doesPathElementMatch &&
+            //   typeof maskListData === 'object' &&
+            //   maskListData !== null &&
+            //   // Only perform the data check if this is the top-level element
+            //   // for the path:
+            //   maskSubList.path.length === idSchema.$path[index]
+            // );
+
+            if (
+              doesPathElementMatch &&
+              typeof maskListData === 'object' &&
+              maskListData !== null &&
+              // this.props.schema.type !== "array" &&
+              // Only perform the data check if this is the top-level element
+              // for the path:
+              maskSubList.path &&
+              maskSubList.path.length === idSchema.$path.length &&
+              maskSubList.path[maskSubList.path.length - 1] ===
+                 idSchema.$path[idSchema.$path.length - 1]
+            ) {
+              console.log('Checking for data match...');
+              console.log(maskListData);
+              // console.log('this.props:');
+              // console.log(this.props);
+              console.log("idSchema.$path:");
+              console.log(idSchema.$path);
+              // if (formData) {
+              //   console.log('formData:');
+              //   console.log(formData);
+              // }
+
+              return typeof maskListData === "object" ?
+                JSON.stringify(
+                  mergeObjects(formData, maskListData)
+                ) === JSON.stringify(formData) :
+                // Handle, for example, strings:
+                JSON.stringify(maskListData) ===
+                  JSON.stringify(formData);
+            }
+            return doesPathElementMatch;
+          }
+          return null;
+        }
+      ).every(isNullOrTrue);
+    }
+  );
+}
+
 function getFieldComponent(schema, uiSchema, idSchema, fields) {
   const field = uiSchema["ui:field"];
   if (typeof field === "function") {
@@ -420,6 +512,16 @@ class SchemaField extends React.Component {
     }
   ];
 
+  denyList = [
+    {
+      path: ["accession", "schemaVersionNumber"]
+    },
+    {
+      path: ["accession", "DCASigner", "affiliation", "affiliationDivision"],
+      data: "external"
+    }
+  ];
+
   render() {
     console.log(424);
 
@@ -467,74 +569,10 @@ class SchemaField extends React.Component {
     //   }
     console.log(this.props.idSchema.$path);
     console.log(this.allowList);
-    const allowListComparison = this.allowList.map(
-      (allowSubList, index) => {
-        return allowSubList.path && allowSubList.path.map(
-          (value, index) => {
-            // console.log(`Comparison is ${this.props.idSchema.$path[index]} vs. ${value}`);
-            if (
-              this.props.idSchema.$path &&
-              this.props.idSchema.$path[index]
-            ) {
-              const allowListData = allowSubList.data ?
-                  allowSubList.data :
-                  null;
-
-              console.log(444);
-              console.log(index);
-              console.log(allowListData);
-
-              const doesPathElementMatch = this.props.idSchema.$path[index] ===
-                value;
-
-              console.log('doesPathElementMatch');
-              console.log(doesPathElementMatch);
-              // console.log(this.props.idSchema.$path[index]);
-              // console.log(value);
-              // console.log(typeof allowListData);
-              // console.log(allowListData);
-              // console.log(
-              //   doesPathElementMatch &&
-              //   typeof allowListData === 'object' &&
-              //   allowListData !== null &&
-              //   // Only perform the data check if this is the top-level element
-              //   // for the path:
-              //   allowSubList.path.length === this.props.idSchema.$path[index]
-              // );
-
-              if (
-                doesPathElementMatch &&
-                typeof allowListData === 'object' &&
-                allowListData !== null &&
-                // this.props.schema.type !== "array" &&
-                // Only perform the data check if this is the top-level element
-                // for the path:
-                allowSubList.path &&
-                allowSubList.path.length === this.props.idSchema.$path.length &&
-                allowSubList.path[allowSubList.path.length - 1] ===
-                   this.props.idSchema.$path[this.props.idSchema.$path.length - 1]
-              ) {
-                console.log('Checking for data match...');
-                console.log(allowListData);
-                // console.log('this.props:');
-                // console.log(this.props);
-                console.log("this.props.idSchema.$path:");
-                console.log(this.props.idSchema.$path);
-                // if (this.props.formData) {
-                //   console.log('formData:');
-                //   console.log(this.props.formData);
-                // }
-
-                return JSON.stringify(
-                  mergeObjects(this.props.formData, allowListData)
-                ) === JSON.stringify(this.props.formData);
-              }
-              return doesPathElementMatch;
-            }
-            return null;
-          }
-        ).every(isNullOrTrue);
-      }
+    const allowListComparison = performMaskComparison(
+      this.allowList,
+      this.props.idSchema,
+      this.props.formData
     );
     console.log('allowListComparison:');
     console.log(allowListComparison);
