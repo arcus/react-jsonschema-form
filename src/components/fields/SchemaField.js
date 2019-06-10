@@ -416,12 +416,52 @@ class SchemaField extends React.Component {
     },
     {
       path: ["accession", "DCASigner", "contactInfo"],
-      data: { email: "helbigi@email.chop.edu" }
+      data: { email: "test@example.com" }
     }
   ];
 
   render() {
-    console.log(407);
+    console.log(424);
+
+    const exampleExistingDataObject = {
+      email: "test@example.com",
+      example1: 123,
+      example2: {
+        test1: {
+          example21a: "abc",
+          example21b: "def",
+        },
+        test2: {
+          example22a: "ghi"
+        }
+      }
+    };
+
+    const exampleMaskObject = {
+      email: "test@example.com",
+      example2: {
+        test1: {
+          example21b: "def"
+        }
+      }
+    };
+
+    console.log(
+      JSON.stringify(mergeObjects(
+        exampleExistingDataObject,
+        exampleMaskObject
+      ))
+    );
+    console.log(JSON.stringify(exampleExistingDataObject));
+
+    console.log(
+      JSON.stringify(mergeObjects(
+        exampleExistingDataObject,
+        exampleMaskObject
+      )) === JSON.stringify(exampleExistingDataObject)
+    );
+
+    console.log(427);
     // if (this.denyList.includes(this.props.name)) {
     //     console.log(this.props.idSchema);
     //   }
@@ -448,8 +488,8 @@ class SchemaField extends React.Component {
               const doesPathElementMatch = this.props.idSchema.$path[index] ===
                 value;
 
-              // console.log('doesPathElementMatch');
-              // console.log(doesPathElementMatch);
+              console.log('doesPathElementMatch');
+              console.log(doesPathElementMatch);
               // console.log(this.props.idSchema.$path[index]);
               // console.log(value);
               // console.log(typeof allowListData);
@@ -467,18 +507,23 @@ class SchemaField extends React.Component {
                 doesPathElementMatch &&
                 typeof allowListData === 'object' &&
                 allowListData !== null &&
+                // this.props.schema.type !== "array" &&
                 // Only perform the data check if this is the top-level element
                 // for the path:
                 allowSubList.path &&
-                allowSubList.path.length === this.props.idSchema.$path.length
+                allowSubList.path.length === this.props.idSchema.$path.length // &&
+                // allowSubList.path[allowSubList.path.length - 1] ===
+                //   this.props.idSchema.$path[this.props.idSchema.$path.length - 1]
               ) {
                 console.log('Checking for data match...');
-                console.log(allowSubList.path);
-                console.log(this.props.idSchema.$path);
-                if (this.props.formData) {
-                  console.log('formData:');
-                  console.log(this.props.formData);
-                }
+                console.log(allowListData);
+                console.log('this.props');
+                console.log(this.props);
+                // console.log(this.props.idSchema.$path);
+                // if (this.props.formData) {
+                //   console.log('formData:');
+                //   console.log(this.props.formData);
+                // }
 
                 return Object.keys(allowListData).map(key => {
                   console.log(451);
