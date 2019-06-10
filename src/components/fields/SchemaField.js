@@ -2,6 +2,7 @@ import { ADDITIONAL_PROPERTY_FLAG } from "../../utils";
 import IconButton from "../IconButton";
 import React from "react";
 import PropTypes from "prop-types";
+import DescriptionField from './DescriptionField';
 import * as types from "../../types";
 
 import {
@@ -619,7 +620,7 @@ class SchemaField extends React.Component {
           denyListComparison.every(isNullOrFalse)
         ) ?
       SchemaFieldRender(this.props) :
-      null;
+      <DescriptionField id={this.props.idSchema.$id} description={"This is a test description."} onChange={() => {return;}} />;
   }
 }
 
