@@ -62,7 +62,7 @@ function performMaskComparison(
                 maskSubList.data :
                 null;
 
-            console.log(`Start of a new ${deny ? "DENY" : "ALLOW"} loop cycle, for the combination of path "${JSON.stringify(idSchema.$path)}", looking specifically at "${idSchema.$path[index]}", comparing to the maskList "${value}" path...`);
+            console.log(`Start of a new ${deny ? "DENY" : "ALLOW"} loop cycle, for the combination of data path "${JSON.stringify(idSchema.$path)}" and maskList path "${JSON.stringify(maskSubList.path)}", looking specifically at data element "${idSchema.$path[index]}", and maskList element "${value}"...`);
             // console.log(index);
             // console.log(maskListData);
 
@@ -172,12 +172,19 @@ function performMaskComparison(
   );
 }
 
-function chunkMaskComparison(comparisonOutput, deny = false) {
+function chunkMaskComparison(
+  comparisonOutput,
+  underlyingDataAreArray = false,
+  deny = false
+) {
   if (Array.isArray(comparisonOutput)) {
     return comparisonOutput.map(element => {
       if (Array.isArray(element)) {
         if (deny) {
           return element.some(isFalse);
+        }
+        if (underlyingDataAreArray) {
+          return element.some(isNullOrTrue);
         }
         return element.every(isNullOrTrue);
       }
@@ -637,7 +644,7 @@ class SchemaField extends React.Component {
     ) : [true];
     console.log('allowListComparison:');
     console.log(allowListComparison);
-    let allowListComparisonProcessed = chunkMaskComparison(allowListComparison);
+    let allowListComparisonProcessed = chunkMaskComparison(allowListComparison, Array.isArray(this.props.formData));
     console.log('allowListComparisonProcessed:');
     console.log(allowListComparisonProcessed);
     const denyListComparison = this.denyList ?
@@ -664,12 +671,12 @@ class SchemaField extends React.Component {
           // denyListComparisonProcessed.every(isNullOrFalse)
         ) ?
       SchemaFieldRender(this.props) :
-      // null;
-      <DescriptionField
-        id={this.props.idSchema.$id}
-        description={`Placeholder for Path "${JSON.stringify(this.props.idSchema.$path)}", ID "${JSON.stringify(this.props.idSchema.$id)}".`}
-        onChange={() => {return;}}
-      />;
+      null;
+      // <DescriptionField
+      //   id={this.props.idSchema.$id}
+      //   description={`Placeholder for Path "${JSON.stringify(this.props.idSchema.$path)}", ID "${JSON.stringify(this.props.idSchema.$id)}".`}
+      //   onChange={() => {return;}}
+      // />;
   }
 }
 
