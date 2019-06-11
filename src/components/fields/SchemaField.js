@@ -2,7 +2,7 @@ import { ADDITIONAL_PROPERTY_FLAG } from "../../utils";
 import IconButton from "../IconButton";
 import React from "react";
 import PropTypes from "prop-types";
-import DescriptionField from './DescriptionField';
+// import DescriptionField from './DescriptionField';
 import * as types from "../../types";
 
 import {
@@ -154,7 +154,7 @@ function performMaskComparison(
 
               return false;
             }
-            return doesPathElementMatch;
+            return deny ? false : doesPathElementMatch;
           }
           return null;
         }
@@ -181,7 +181,12 @@ function chunkMaskComparison(
     return comparisonOutput.map(element => {
       if (Array.isArray(element)) {
         if (deny) {
-          return element.some(isFalse);
+          if (underlyingDataAreArray) {
+            console.log(185);
+            return element.some(isTrue);
+          }
+          console.log(188);
+          return !element.every(isNullOrFalse);
         }
         if (underlyingDataAreArray) {
           return element.some(isNullOrTrue);
@@ -189,6 +194,9 @@ function chunkMaskComparison(
         return element.every(isNullOrTrue);
       }
 
+      if (deny) {
+        return isTrue(element);
+      }
       return isNullOrTrue(element);
     });
   }
@@ -621,7 +629,7 @@ class SchemaField extends React.Component {
       path: ["collection", "series"]
     },
     {
-      path: ["collection", "relatedIdentifiers", "relatedIdentifierURI"]
+      path: ["collection", "relatedIdentifiers", "@identifierSchemeURI"]
     },
     {
       path: ["collection", "relatedIdentifiers", "@relationType"]
@@ -656,7 +664,11 @@ class SchemaField extends React.Component {
       ) : [false];
       console.log('denyListComparison:');
       console.log(denyListComparison);
-      const denyListComparisonProcessed = chunkMaskComparison(denyListComparison, true);
+      const denyListComparisonProcessed = chunkMaskComparison(
+        denyListComparison,
+        Array.isArray(this.props.formData),
+        true
+      );
       console.log('denyListComparisonProcessed:');
       console.log(denyListComparisonProcessed);
       // console.log('this.props.idSchema.$path:');
@@ -667,8 +679,8 @@ class SchemaField extends React.Component {
       this.props.idSchema.$path && this.props.idSchema.$path.length === 0
     ) ||
         (
-          allowListComparisonProcessed.some(isTrue) // &&
-          // denyListComparisonProcessed.every(isNullOrFalse)
+          allowListComparisonProcessed.some(isTrue) &&
+          !denyListComparisonProcessed.some(isTrue)
         ) ?
       SchemaFieldRender(this.props) :
       null;

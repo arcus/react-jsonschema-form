@@ -319,6 +319,9 @@ class ArrayField extends Component {
   };
 
   render() {
+    console.log('Within the render call in the ArrayField component, here are the props:');
+    console.log(this.props);
+    
     const {
       schema,
       uiSchema,
