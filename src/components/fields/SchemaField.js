@@ -405,7 +405,7 @@ function WrapIfAdditional(props) {
   );
 }
 
-function SchemaFieldRender(props, arrayMask = null) {
+function SchemaFieldRender(props, arrayMask = []) {
   const {
     uiSchema,
     formData,
@@ -620,6 +620,12 @@ class SchemaField extends React.Component {
     },
     {
       path: ["collection", "collectionIdentifier"]
+    },
+    {
+      path: ["collection", "publisher"],
+      data: {
+        "@publisherIdentifierType": "grid"
+      }
     }
   ];
 
@@ -688,7 +694,7 @@ class SchemaField extends React.Component {
           allowListComparisonProcessed.some(isTrue) &&
           !denyListComparisonProcessed.some(isTrue)
         ) ?
-      SchemaFieldRender(this.props, [false, true, false]) :
+      SchemaFieldRender(this.props, [false, true]) :
       null;
       // <DescriptionField
       //   id={this.props.idSchema.$id}

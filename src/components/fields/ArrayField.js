@@ -390,15 +390,11 @@ class ArrayField extends Component {
           idPrefix,
           idSchema.$path
         );
-        return arrayMask[index] ?
-          this.renderArrayFieldItem({
+        return arrayMask !== null && !arrayMask[index] ?
+          this.renderArrayNullFieldItem({
             index,
-            canMoveUp: arrayMask && arrayMask[index] !== undefined ?
-              false :
-              index > 0,
-            canMoveDown: arrayMask && arrayMask[index] !== undefined ?
-              false :
-              index < formData.length - 1,
+            canMoveUp: index > 0,
+            canMoveDown: index < formData.length - 1,
             itemSchema: itemSchema,
             itemIdSchema,
             itemErrorSchema,
@@ -408,10 +404,14 @@ class ArrayField extends Component {
             onBlur,
             onFocus,
           }) :
-          this.renderArrayNullFieldItem({
+          this.renderArrayFieldItem({
             index,
-            canMoveUp: index > 0,
-            canMoveDown: index < formData.length - 1,
+            canMoveUp: arrayMask !== null && arrayMask[index] !== undefined ?
+              false :
+              index > 0,
+            canMoveDown: arrayMask !== null && arrayMask[index] !== undefined ?
+              false :
+              index < formData.length - 1,
             itemSchema: itemSchema,
             itemIdSchema,
             itemErrorSchema,
@@ -592,16 +592,12 @@ class ArrayField extends Component {
           : uiSchema.items || {};
         const itemErrorSchema = errorSchema ? errorSchema[index] : undefined;
 
-        return arrayMask[index] ?
-          this.renderArrayFieldItem({
+        return arrayMask !== null && !arrayMask[index] ?
+          this.renderArrayNullFieldItem({
             index,
             canRemove: additional,
-            canMoveUp: arrayMask && arrayMask[index] !== undefined ?
-              false :
-              index >= itemSchemas.length + 1,
-            canMoveDown: arrayMask && arrayMask[index] !== undefined ?
-              false :
-              additional && index < items.length - 1,
+            canMoveUp: index >= itemSchemas.length + 1,
+            canMoveDown: additional && index < items.length - 1,
             itemSchema,
             itemData: item,
             itemUiSchema,
@@ -611,11 +607,15 @@ class ArrayField extends Component {
             onBlur,
             onFocus,
           }) :
-          this.renderArrayNullFieldItem({
+          this.renderArrayFieldItem({
             index,
             canRemove: additional,
-            canMoveUp: index >= itemSchemas.length + 1,
-            canMoveDown: additional && index < items.length - 1,
+            canMoveUp: arrayMask !== null && arrayMask[index] !== undefined ?
+              false :
+              index >= itemSchemas.length + 1,
+            canMoveDown: arrayMask !== null && arrayMask[index] !== undefined ?
+              false :
+              additional && index < items.length - 1,
             itemSchema,
             itemData: item,
             itemUiSchema,
