@@ -731,7 +731,6 @@ class ArrayField extends Component {
       rawErrors,
     } = props;
     const {
-      disabled,
       readonly,
       uiSchema
     } = this.props;
@@ -769,12 +768,12 @@ class ArrayField extends Component {
           rawErrors={rawErrors}
         />
       ),
-      className: "array-item",
-      disabled,
-      hasToolbar: has.toolbar,
-      hasMoveUp: has.moveUp,
-      hasMoveDown: has.moveDown,
-      hasRemove: has.remove,
+      className: "array-item filtered",
+      disabled: true,
+      hasToolbar: false,
+      hasMoveUp: false,
+      hasMoveDown: false,
+      hasRemove: false,
       index,
       onDropIndexClick: this.onDropIndexClick,
       onReorderClick: this.onReorderClick,
