@@ -393,6 +393,23 @@ class ArrayField extends Component {
         return arrayMask[index] ?
           this.renderArrayFieldItem({
             index,
+            canMoveUp: arrayMask && arrayMask[index] !== undefined ?
+              false :
+              index > 0,
+            canMoveDown: arrayMask && arrayMask[index] !== undefined ?
+              false :
+              index < formData.length - 1,
+            itemSchema: itemSchema,
+            itemIdSchema,
+            itemErrorSchema,
+            itemData: item,
+            itemUiSchema: uiSchema.items,
+            autofocus: autofocus && index === 0,
+            onBlur,
+            onFocus,
+          }) :
+          this.renderArrayNullFieldItem({
+            index,
             canMoveUp: index > 0,
             canMoveDown: index < formData.length - 1,
             itemSchema: itemSchema,
@@ -403,8 +420,7 @@ class ArrayField extends Component {
             autofocus: autofocus && index === 0,
             onBlur,
             onFocus,
-          }) :
-        <NullField onChange={() => null} />;
+          });
       }),
       className: `field field-array field-array-of-${itemsSchema.type}`,
       DescriptionField,
@@ -580,6 +596,24 @@ class ArrayField extends Component {
           this.renderArrayFieldItem({
             index,
             canRemove: additional,
+            canMoveUp: arrayMask && arrayMask[index] !== undefined ?
+              false :
+              index >= itemSchemas.length + 1,
+            canMoveDown: arrayMask && arrayMask[index] !== undefined ?
+              false :
+              additional && index < items.length - 1,
+            itemSchema,
+            itemData: item,
+            itemUiSchema,
+            itemIdSchema,
+            itemErrorSchema,
+            autofocus: autofocus && index === 0,
+            onBlur,
+            onFocus,
+          }) :
+          this.renderArrayNullFieldItem({
+            index,
+            canRemove: additional,
             canMoveUp: index >= itemSchemas.length + 1,
             canMoveDown: additional && index < items.length - 1,
             itemSchema,
@@ -590,8 +624,7 @@ class ArrayField extends Component {
             autofocus: autofocus && index === 0,
             onBlur,
             onFocus,
-          }) :
-        <NullField onChange={() => null} />;
+          });
       }),
       onAddClick: this.onAddClick,
       readonly,
@@ -652,6 +685,74 @@ class ArrayField extends Component {
     return {
       children: (
         <SchemaField
+          schema={itemSchema}
+          uiSchema={itemUiSchema}
+          formData={itemData}
+          errorSchema={itemErrorSchema}
+          idSchema={itemIdSchema}
+          required={this.isItemRequired(itemSchema)}
+          onChange={this.onChangeForIndex(index)}
+          onBlur={onBlur}
+          onFocus={onFocus}
+          registry={this.props.registry}
+          disabled={this.props.disabled}
+          readonly={this.props.readonly}
+          autofocus={autofocus}
+          rawErrors={rawErrors}
+        />
+      ),
+      className: "array-item",
+      disabled,
+      hasToolbar: has.toolbar,
+      hasMoveUp: has.moveUp,
+      hasMoveDown: has.moveDown,
+      hasRemove: has.remove,
+      index,
+      onDropIndexClick: this.onDropIndexClick,
+      onReorderClick: this.onReorderClick,
+      readonly,
+    };
+  }
+
+  renderArrayNullFieldItem(props) {
+    const {
+      index,
+      canRemove = false,
+      canMoveUp = false,
+      canMoveDown = false,
+      itemSchema,
+      itemData,
+      itemUiSchema,
+      itemIdSchema,
+      itemErrorSchema,
+      autofocus,
+      onBlur,
+      onFocus,
+      rawErrors,
+    } = props;
+    const {
+      disabled,
+      readonly,
+      uiSchema
+    } = this.props;
+    const { orderable, removable } = {
+      orderable: false,
+      removable: false,
+      ...uiSchema["ui:options"],
+    };
+    const has = {
+      moveUp: orderable && canMoveUp,
+      moveDown: orderable && canMoveDown,
+      remove: removable && canRemove,
+    };
+    has.toolbar = Object.keys(has).some(key => has[key]);
+
+    console.log('Within ArrayNullField, immediately before rendering, itemData:');
+    console.log(itemData);
+
+    return {
+      children: (
+        <NullField
           schema={itemSchema}
           uiSchema={itemUiSchema}
           formData={itemData}
