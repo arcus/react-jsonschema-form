@@ -62,7 +62,7 @@ function performMaskComparison(
                 maskSubList.data :
                 null;
 
-            console.log(`Start of a new ${deny ? "DENY" : "ALLOW"} loop cycle, for path "${JSON.stringify(idSchema.$path)}", looking specifically at "${idSchema.$path[index]}", comparing to the maskList "${value}" path...`);
+            console.log(`Start of a new ${deny ? "DENY" : "ALLOW"} loop cycle, for the combination of path "${JSON.stringify(idSchema.$path)}", looking specifically at "${idSchema.$path[index]}", comparing to the maskList "${value}" path...`);
             // console.log(index);
             // console.log(maskListData);
 
@@ -91,7 +91,9 @@ function performMaskComparison(
             const isThisFullPath = maskSubList.path &&
               maskSubList.path.length === idSchema.$path.length &&
               JSON.stringify(maskSubList.path) ===
-                 JSON.stringify(idSchema.$path);
+                 JSON.stringify(idSchema.$path) &&
+              value ===
+                idSchema.$path[idSchema.$path.length - 1];
 
             if (
               doesPathElementMatch &&
@@ -123,6 +125,8 @@ function performMaskComparison(
                 });
                 console.log('matchingElements:');
                 console.log(matchingElements);
+                console.log('The formData to go along with those matchingElements indexes:');
+                console.log(formData);
                 return matchingElements;
                 // return JSON.stringify(
                 //   mergeObjects(formData.filter(element), maskListData)
