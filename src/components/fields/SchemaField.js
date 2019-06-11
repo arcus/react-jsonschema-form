@@ -62,15 +62,15 @@ function performMaskComparison(
                 maskSubList.data :
                 null;
 
-            console.log(444);
-            console.log(index);
-            console.log(maskListData);
+            console.log(`Start of a new ${deny ? "DENY" : "ALLOW"} loop cycle, for path "${JSON.stringify(idSchema.$path)}", looking specifically at "${idSchema.$path[index]}", comparing to the maskList "${value}" path...`);
+            // console.log(index);
+            // console.log(maskListData);
 
             const doesPathElementMatch = idSchema.$path[index] ===
               value;
 
-            console.log('doesPathElementMatch');
-            console.log(doesPathElementMatch);
+            // console.log('doesPathElementMatch:');
+            // console.log(doesPathElementMatch);
             // console.log(idSchema.$path[index]);
             // console.log(value);
             // console.log(typeof maskListData);
@@ -84,9 +84,9 @@ function performMaskComparison(
             //   maskSubList.path.length === idSchema.$path[index]
             // );
             //
-            console.log(84);
-            console.log(maskSubList.path);
-            console.log(idSchema.$path);
+            // console.log(84);
+            // console.log(maskSubList.path);
+            // console.log(idSchema.$path);
 
             const isThisFullPath = maskSubList.path &&
               maskSubList.path.length === idSchema.$path.length &&
@@ -103,18 +103,19 @@ function performMaskComparison(
               isThisFullPath
             ) {
               console.log('Checking for data match...');
-              console.log(maskListData);
-              console.log(formData);
+              // console.log(maskListData);
+              // console.log(formData);
               // console.log('this.props:');
               // console.log(this.props);
-              console.log("idSchema.$path:");
-              console.log(idSchema.$path);
+              // console.log("idSchema.$path:");
+              // console.log(idSchema.$path);
               // if (formData) {
               //   console.log('formData:');
               //   console.log(formData);
               // }
 
               if (Array.isArray(formData)) {
+                console.log("Processing formData as array...");
                 const matchingElements = formData.map(element => {
                   return JSON.stringify(
                     mergeObjects(element, maskListData)
@@ -155,8 +156,8 @@ function performMaskComparison(
         }
       );
 
-      console.log("maskOutcome:");
-      console.log(maskOutcome);
+      // console.log("maskOutcome:");
+      // console.log(maskOutcome);
 
       // if (Array.isArray(formData)) {
       //   return maskOutcome.some(isNullOrTrue);
@@ -165,6 +166,23 @@ function performMaskComparison(
       return maskOutcome; //.every(isNullOrTrue);
     }
   );
+}
+
+function chunkMaskComparison(comparisonOutput, deny = false) {
+  if (Array.isArray(comparisonOutput)) {
+    return comparisonOutput.map(element => {
+      if (Array.isArray(element)) {
+        if (deny) {
+          return element.some(isFalse);
+        }
+        return element.every(isNullOrTrue);
+      }
+
+      return isNullOrTrue(element);
+    });
+  }
+
+  return comparisonOutput;
 }
 
 function getFieldComponent(schema, uiSchema, idSchema, fields) {
@@ -536,6 +554,8 @@ function SchemaFieldRender(props, arrayMask = null) {
 
 const isNullOrTrue = value => value === true || value === null;
 const isNullOrFalse = value => value === false || value === null;
+const isTrue = value => value === true;
+const isFalse = value => value === false;
 
 class SchemaField extends React.Component {
   shouldComponentUpdate(nextProps, nextState) {
@@ -568,10 +588,13 @@ class SchemaField extends React.Component {
     //   }
     // },
     {
-      path: ["collection", "series"],
+      path: ["collection", "relatedIdentifiers"],
       data: {
-        seriesIdentifier: "C2019050100002S05"
+        "relatedIdentifierURI": "123456"
       }
+    },
+    {
+      path: ["collection", "collectionIdentifier"]
     }
   ];
 
@@ -584,20 +607,23 @@ class SchemaField extends React.Component {
     //   data: "external"
     // }
     {
-      path: ["collection", "series", "file"]
+      path: ["collection", "series"]
     },
     {
-      path: ["collection", "series", "subSeries"]
+      path: ["collection", "relatedIdentifiers", "relatedIdentifierURI"]
+    },
+    {
+      path: ["collection", "relatedIdentifiers", "@relationType"]
     }
   ];
 
   render() {
-    console.log(427);
+    console.log(`Now processing data path "${JSON.stringify(this.props.idSchema.$path)}"...`);
     // if (this.denyList.includes(this.props.name)) {
     //     console.log(this.props.idSchema);
     //   }
-    console.log(this.props.idSchema.$path);
-    console.log(this.props.formData);
+    // console.log(this.props.idSchema.$path);
+    // console.log(this.props.formData);
     // console.log(this.allowList);
     // console.log(this.props.idSchema.$path);
     const allowListComparison = this.allowList ? performMaskComparison(
@@ -607,15 +633,7 @@ class SchemaField extends React.Component {
     ) : [true];
     console.log('allowListComparison:');
     console.log(allowListComparison);
-    let allowListComparisonProcessed = allowListComparison;
-    if (Array.isArray(allowListComparison)) {
-      allowListComparisonProcessed = allowListComparison.map(element => {
-        if (Array.isArray(this.props.formData)) {
-          return element.some(isNullOrTrue);
-        }
-        return element.every(isNullOrTrue);
-      });
-    }
+    let allowListComparisonProcessed = chunkMaskComparison(allowListComparison);
     console.log('allowListComparisonProcessed:');
     console.log(allowListComparisonProcessed);
     const denyListComparison = this.denyList ?
@@ -627,27 +645,27 @@ class SchemaField extends React.Component {
       ) : [false];
       console.log('denyListComparison:');
       console.log(denyListComparison);
-      const denyListComparisonProcessed = Array.isArray(denyListComparison) ?
-        denyListComparison.map(element => element.every(isNullOrFalse)) :
-        denyListComparison;
+      const denyListComparisonProcessed = chunkMaskComparison(denyListComparison, true);
       console.log('denyListComparisonProcessed:');
       console.log(denyListComparisonProcessed);
+      // console.log('this.props.idSchema.$path:');
+      // console.log(this.props.idSchema.$path);
     // Allow if this is the root element or if the element is allowed, or is a
     // parent of an allowed element:
     return (
       this.props.idSchema.$path && this.props.idSchema.$path.length === 0
     ) ||
         (
-          allowListComparisonProcessed.some(isNullOrTrue) // &&
-          // denyListComparisonProcessed.some(isNullOrFalse)
+          allowListComparisonProcessed.some(isTrue) // &&
+          // denyListComparisonProcessed.every(isNullOrFalse)
         ) ?
-      SchemaFieldRender(this.props, [true, true, false, false, false]) :
-      null;
-      // <DescriptionField
-      //   id={this.props.idSchema.$id}
-      //   description={"This is a test description."}
-      //   onChange={() => {return;}}
-      // />;
+      SchemaFieldRender(this.props) :
+      // null;
+      <DescriptionField
+        id={this.props.idSchema.$id}
+        description={`Placeholder for Path "${JSON.stringify(this.props.idSchema.$path)}", ID "${JSON.stringify(this.props.idSchema.$id)}".`}
+        onChange={() => {return;}}
+      />;
   }
 }
 
