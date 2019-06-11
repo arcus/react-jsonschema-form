@@ -179,6 +179,9 @@ function chunkMaskComparison(
 ) {
   if (Array.isArray(comparisonOutput)) {
     return comparisonOutput.map(element => {
+      console.log('Within chunkMaskComparison, element is:');
+      console.log(element);
+
       if (Array.isArray(element)) {
         if (deny) {
           if (underlyingDataAreArray) {
@@ -189,14 +192,17 @@ function chunkMaskComparison(
           return !element.every(isNullOrFalse);
         }
         if (underlyingDataAreArray) {
-          return element.some(isNullOrTrue);
+          console.log(192);
+          return !element.some(isFalse);
         }
+        console.log(195);
         return element.every(isNullOrTrue);
       }
 
       if (deny) {
         return isTrue(element);
       }
+      console.log(202);
       return isNullOrTrue(element);
     });
   }
