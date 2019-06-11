@@ -688,7 +688,7 @@ class SchemaField extends React.Component {
           allowListComparisonProcessed.some(isTrue) &&
           !denyListComparisonProcessed.some(isTrue)
         ) ?
-      SchemaFieldRender(this.props) :
+      SchemaFieldRender(this.props, [false, true, false]) :
       null;
       // <DescriptionField
       //   id={this.props.idSchema.$id}

@@ -5,6 +5,7 @@ import includes from "core-js/library/fn/array/includes";
 import * as types from "../../types";
 
 import UnsupportedField from "./UnsupportedField";
+import NullField from "./NullField";
 import {
   getWidget,
   getDefaultFormState,
@@ -321,7 +322,7 @@ class ArrayField extends Component {
   render() {
     console.log('Within the render call in the ArrayField component, here are the props:');
     console.log(this.props);
-    
+
     const {
       schema,
       uiSchema,
@@ -367,6 +368,7 @@ class ArrayField extends Component {
       onFocus,
       idPrefix,
       rawErrors,
+      arrayMask,
     } = this.props;
     const title = schema.title === undefined ? name : schema.title;
     const { ArrayFieldTemplate, definitions, fields, formContext } = registry;
@@ -386,19 +388,21 @@ class ArrayField extends Component {
           idPrefix,
           idSchema.$path
         );
-        return this.renderArrayFieldItem({
-          index,
-          canMoveUp: index > 0,
-          canMoveDown: index < formData.length - 1,
-          itemSchema: itemSchema,
-          itemIdSchema,
-          itemErrorSchema,
-          itemData: item,
-          itemUiSchema: uiSchema.items,
-          autofocus: autofocus && index === 0,
-          onBlur,
-          onFocus,
-        });
+        return arrayMask[index] ?
+          this.renderArrayFieldItem({
+            index,
+            canMoveUp: index > 0,
+            canMoveDown: index < formData.length - 1,
+            itemSchema: itemSchema,
+            itemIdSchema,
+            itemErrorSchema,
+            itemData: item,
+            itemUiSchema: uiSchema.items,
+            autofocus: autofocus && index === 0,
+            onBlur,
+            onFocus,
+          }) :
+        <NullField onChange={() => null} />;
       }),
       className: `field field-array field-array-of-${itemsSchema.type}`,
       DescriptionField,
@@ -528,9 +532,6 @@ class ArrayField extends Component {
     const { ArrayFieldTemplate, definitions, fields, formContext } = registry;
     const { TitleField } = fields;
     const itemSchemas = schema.items.map((item, index) => {
-      if (!arrayMask[index]) {
-        return null;
-      }
       return retrieveSchema(item, definitions, formData[index]);
     });
     const additionalSchema = allowAdditionalItems(schema)
@@ -551,10 +552,6 @@ class ArrayField extends Component {
       idSchema,
       formData,
       items: items.map((item, index) => {
-        if (!arrayMask[index]) {
-          return null;
-        }
-
         const additional = index >= itemSchemas.length;
         const itemSchema = additional
           ? retrieveSchema(schema.additionalItems, definitions, item)
@@ -575,20 +572,22 @@ class ArrayField extends Component {
           : uiSchema.items || {};
         const itemErrorSchema = errorSchema ? errorSchema[index] : undefined;
 
-        return this.renderArrayFieldItem({
-          index,
-          canRemove: additional,
-          canMoveUp: index >= itemSchemas.length + 1,
-          canMoveDown: additional && index < items.length - 1,
-          itemSchema,
-          itemData: item,
-          itemUiSchema,
-          itemIdSchema,
-          itemErrorSchema,
-          autofocus: autofocus && index === 0,
-          onBlur,
-          onFocus,
-        });
+        return arrayMask[index] ?
+          this.renderArrayFieldItem({
+            index,
+            canRemove: additional,
+            canMoveUp: index >= itemSchemas.length + 1,
+            canMoveDown: additional && index < items.length - 1,
+            itemSchema,
+            itemData: item,
+            itemUiSchema,
+            itemIdSchema,
+            itemErrorSchema,
+            autofocus: autofocus && index === 0,
+            onBlur,
+            onFocus,
+          }) :
+        <NullField onChange={() => null} />;
       }),
       onAddClick: this.onAddClick,
       readonly,
@@ -642,6 +641,9 @@ class ArrayField extends Component {
       remove: removable && canRemove,
     };
     has.toolbar = Object.keys(has).some(key => has[key]);
+
+    console.log('Within ArrayField, immediately before rendering, itemData:');
+    console.log(itemData);
 
     return {
       children: (
