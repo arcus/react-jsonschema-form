@@ -607,9 +607,15 @@ class SchemaField extends React.Component {
     ) : [true];
     console.log('allowListComparison:');
     console.log(allowListComparison);
-    const allowListComparisonProcessed = Array.isArray(allowListComparison) ?
-      allowListComparison.map(element => element.every(isNullOrTrue)) :
-      allowListComparison;
+    let allowListComparisonProcessed = allowListComparison;
+    if (Array.isArray(allowListComparison)) {
+      allowListComparisonProcessed = allowListComparison.map(element => {
+        if (Array.isArray(this.props.formData)) {
+          return element.some(isNullOrTrue);
+        }
+        return element.every(isNullOrTrue);
+      });
+    }
     console.log('allowListComparisonProcessed:');
     console.log(allowListComparisonProcessed);
     const denyListComparison = this.denyList ?
@@ -632,12 +638,16 @@ class SchemaField extends React.Component {
       this.props.idSchema.$path && this.props.idSchema.$path.length === 0
     ) ||
         (
-          allowListComparisonProcessed.some(isNullOrTrue) &&
-          denyListComparisonProcessed.some(isNullOrTrue)
+          allowListComparisonProcessed.some(isNullOrTrue) // &&
+          // denyListComparisonProcessed.some(isNullOrFalse)
         ) ?
       SchemaFieldRender(this.props, [true, true, false, false, false]) :
       null;
-      // <DescriptionField id={this.props.idSchema.$id} description={"This is a test description."} onChange={() => {return;}} />;
+      // <DescriptionField
+      //   id={this.props.idSchema.$id}
+      //   description={"This is a test description."}
+      //   onChange={() => {return;}}
+      // />;
   }
 }
 
