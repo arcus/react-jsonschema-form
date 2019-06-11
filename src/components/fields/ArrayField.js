@@ -518,14 +518,18 @@ class ArrayField extends Component {
       onBlur,
       onFocus,
       rawErrors,
+      arrayMask,
     } = this.props;
     const title = schema.title || name;
     let items = this.props.formData;
     const { ArrayFieldTemplate, definitions, fields, formContext } = registry;
     const { TitleField } = fields;
-    const itemSchemas = schema.items.map((item, index) =>
-      retrieveSchema(item, definitions, formData[index])
-    );
+    const itemSchemas = schema.items.map((item, index) => {
+      if (!arrayMask[index]) {
+        return null;
+      }
+      return retrieveSchema(item, definitions, formData[index]);
+    });
     const additionalSchema = allowAdditionalItems(schema)
       ? retrieveSchema(schema.additionalItems, definitions, formData)
       : null;
@@ -544,6 +548,10 @@ class ArrayField extends Component {
       idSchema,
       formData,
       items: items.map((item, index) => {
+        if (!arrayMask[index]) {
+          return null;
+        }
+
         const additional = index >= itemSchemas.length;
         const itemSchema = additional
           ? retrieveSchema(schema.additionalItems, definitions, item)

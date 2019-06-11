@@ -51,7 +51,7 @@ function performMaskComparison(
 ) {
   return maskList.map(
     (maskSubList, index) => {
-      return maskSubList.path && maskSubList.path.map(
+      const maskOutcome = maskSubList.path && maskSubList.path.map(
         (value, index) => {
           // console.log(`Comparison is ${idSchema.$path[index]} vs. ${value}`);
           if (
@@ -104,6 +104,7 @@ function performMaskComparison(
             ) {
               console.log('Checking for data match...');
               console.log(maskListData);
+              console.log(formData);
               // console.log('this.props:');
               // console.log(this.props);
               console.log("idSchema.$path:");
@@ -113,12 +114,26 @@ function performMaskComparison(
               //   console.log(formData);
               // }
 
-              return typeof maskListData === "object" ?
-                JSON.stringify(
+              if (Array.isArray(formData)) {
+                const matchingElements = formData.map(element => {
+                  return JSON.stringify(
+                    mergeObjects(element, maskListData)
+                  ) === JSON.stringify(element);
+                });
+                console.log('matchingElements:');
+                console.log(matchingElements);
+                return matchingElements;
+                // return JSON.stringify(
+                //   mergeObjects(formData.filter(element), maskListData)
+                // ) === JSON.stringify(formData);
+              }
+              if (typeof maskListData === "object") {
+                return JSON.stringify(
                   mergeObjects(formData, maskListData)
-                ) === JSON.stringify(formData) :
-                // Handle, for example, strings:
-                JSON.stringify(maskListData) ===
+                ) === JSON.stringify(formData);
+              }
+              // Handle, for example, strings:
+              return JSON.stringify(maskListData) ===
                   JSON.stringify(formData);
             }
 
@@ -138,7 +153,16 @@ function performMaskComparison(
           }
           return null;
         }
-      ).every(isNullOrTrue);
+      );
+
+      console.log("maskOutcome:");
+      console.log(maskOutcome);
+
+      // if (Array.isArray(formData)) {
+      //   return maskOutcome.some(isNullOrTrue);
+      // }
+
+      return maskOutcome; //.every(isNullOrTrue);
     }
   );
 }
@@ -338,7 +362,7 @@ function WrapIfAdditional(props) {
   );
 }
 
-function SchemaFieldRender(props) {
+function SchemaFieldRender(props, arrayMask = null) {
   const {
     uiSchema,
     formData,
@@ -403,6 +427,7 @@ function SchemaFieldRender(props) {
       errorSchema={fieldErrorSchema}
       formContext={formContext}
       rawErrors={__errors}
+      arrayMask={arrayMask}
     />
   );
 
@@ -523,79 +548,58 @@ class SchemaField extends React.Component {
   }
 
   allowList = [
+    // {
+    //   path: ["accession", "schemaVersionNumber"]
+    // },
+    // {
+    //   path: ["accession", "DCASigner", "affiliation"]
+    // },
+    // {
+    //   path: ["accession", "DCASigner", "contactInfo"],
+    //   data: { email: "test@example.com" }
+    // },
+    // {
+    //   path: ["accession", "accessionNumber"]
+    // }
+    // {
+    //   path: ["collection", "series", "participantList"],
+    //   data: {
+    //     participantListLocation: "a"
+    //   }
+    // },
     {
-      path: ["accession", "schemaVersionNumber"]
-    },
-    {
-      path: ["accession", "DCASigner", "affiliation"]
-    },
-    {
-      path: ["accession", "DCASigner", "contactInfo"],
-      data: { email: "test@example.com" }
-    },
-    {
-      path: ["accession", "accessionNumber"]
+      path: ["collection", "series"],
+      data: {
+        seriesIdentifier: "C2019050100002S05"
+      }
     }
   ];
 
   denyList = [
+    // {
+    //   path: ["accession", "schemaVersionNumber"]
+    // },
+    // {
+    //   path: ["accession", "DCASigner", "affiliation", "affiliationDivision"],
+    //   data: "external"
+    // }
     {
-      path: ["accession", "schemaVersionNumber"]
+      path: ["collection", "series", "file"]
     },
     {
-      path: ["accession", "DCASigner", "affiliation", "affiliationDivision"],
-      data: "external"
+      path: ["collection", "series", "subSeries"]
     }
   ];
 
   render() {
-    console.log(424);
-
-    const exampleExistingDataObject = {
-      email: "test@example.com",
-      example1: 123,
-      example2: {
-        test1: {
-          example21a: "abc",
-          example21b: "def",
-        },
-        test2: {
-          example22a: "ghi"
-        }
-      }
-    };
-
-    const exampleMaskObject = {
-      email: "test@example.com",
-      example2: {
-        test1: {
-          example21b: "def"
-        }
-      }
-    };
-
-    console.log(
-      JSON.stringify(mergeObjects(
-        exampleExistingDataObject,
-        exampleMaskObject
-      ))
-    );
-    console.log(JSON.stringify(exampleExistingDataObject));
-
-    console.log(
-      JSON.stringify(mergeObjects(
-        exampleExistingDataObject,
-        exampleMaskObject
-      )) === JSON.stringify(exampleExistingDataObject)
-    );
-
     console.log(427);
     // if (this.denyList.includes(this.props.name)) {
     //     console.log(this.props.idSchema);
     //   }
-    // console.log(this.props.idSchema.$path);
-    // console.log(this.allowList);
     console.log(this.props.idSchema.$path);
+    console.log(this.props.formData);
+    // console.log(this.allowList);
+    // console.log(this.props.idSchema.$path);
     const allowListComparison = this.allowList ? performMaskComparison(
       this.allowList,
       this.props.idSchema,
@@ -603,8 +607,13 @@ class SchemaField extends React.Component {
     ) : [true];
     console.log('allowListComparison:');
     console.log(allowListComparison);
+    const allowListComparisonProcessed = Array.isArray(allowListComparison) ?
+      allowListComparison.map(element => element.every(isNullOrTrue)) :
+      allowListComparison;
+    console.log('allowListComparisonProcessed:');
+    console.log(allowListComparisonProcessed);
     const denyListComparison = this.denyList ?
-      allowListComparison.some(isNullOrTrue) && performMaskComparison(
+      allowListComparisonProcessed.some(isNullOrTrue) && performMaskComparison(
         this.denyList,
         this.props.idSchema,
         this.props.formData,
@@ -612,15 +621,23 @@ class SchemaField extends React.Component {
       ) : [false];
       console.log('denyListComparison:');
       console.log(denyListComparison);
+      const denyListComparisonProcessed = Array.isArray(denyListComparison) ?
+        denyListComparison.map(element => element.every(isNullOrFalse)) :
+        denyListComparison;
+      console.log('denyListComparisonProcessed:');
+      console.log(denyListComparisonProcessed);
     // Allow if this is the root element or if the element is allowed, or is a
     // parent of an allowed element:
-    return this.props.idSchema.$path.length === 0 ||
+    return (
+      this.props.idSchema.$path && this.props.idSchema.$path.length === 0
+    ) ||
         (
-          allowListComparison.some(isNullOrTrue) &&
-          denyListComparison.every(isNullOrFalse)
+          allowListComparisonProcessed.some(isNullOrTrue) &&
+          denyListComparisonProcessed.some(isNullOrTrue)
         ) ?
-      SchemaFieldRender(this.props) :
-      <DescriptionField id={this.props.idSchema.$id} description={"This is a test description."} onChange={() => {return;}} />;
+      SchemaFieldRender(this.props, [true, true, false, false, false]) :
+      null;
+      // <DescriptionField id={this.props.idSchema.$id} description={"This is a test description."} onChange={() => {return;}} />;
   }
 }
 
