@@ -375,7 +375,9 @@ class ArrayField extends Component {
     const { TitleField, DescriptionField } = fields;
     const itemsSchema = retrieveSchema(schema.items, definitions);
     const arrayProps = {
-      canAdd: this.canAddItem(formData),
+      canAdd: arrayMask !== null ?
+        false :
+        this.canAddItem(formData),
       items: formData.map((item, index) => {
         const itemSchema = retrieveSchema(schema.items, definitions, item);
         const itemErrorSchema = errorSchema ? errorSchema[index] : undefined;
@@ -546,7 +548,9 @@ class ArrayField extends Component {
 
     // These are the props passed into the render function
     const arrayProps = {
-      canAdd: this.canAddItem(items) && additionalSchema,
+      canAdd: arrayMask !== null ?
+        false :
+        this.canAddItem(items) && additionalSchema,
       className: "field field-array field-array-fixed-items",
       disabled,
       idSchema,
