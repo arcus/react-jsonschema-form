@@ -116,6 +116,9 @@ function performMaskComparison(
               //   console.log(formData);
               // }
 
+              console.log('formData:');
+              console.log(formData);
+
               if (Array.isArray(formData)) {
                 console.log("Processing formData as array...");
                 const matchingElements = formData.map(element => {
@@ -242,8 +245,9 @@ function createArrayMaskList(arrayOfComparisons) {
       )
   ) {
     console.log(237);
-    // "Multiply" the individiual array masks together:
-    // true * true = true, false * false = false, true * false = false:
+    // Allow values of "true" to cascade down across arrays:
+    // (This allows us to set multiple allowList rules about the same array
+    // field.)
     return individualArrayMasks.slice(1, individualArrayMasks.length).reduce(
       (aggregator, currentComparison) => {
         return aggregator.map((aggregatorElement, index) => {
@@ -675,16 +679,19 @@ class SchemaField extends React.Component {
     // },
     {
       path: ["collection", "relatedIdentifiers"],
-      data: {
-        "relatedIdentifierURI": "123456"
-      }
     },
-    {
-      path: ["collection", "relatedIdentifiers"],
-      data: {
-        "relatedIdentifierURI": "345678"
-      }
-    },
+    // {
+    //   path: ["collection", "relatedIdentifiers"],
+    //   data: {
+    //     "relatedIdentifierURI": "123456"
+    //   }
+    // },
+    // {
+    //   path: ["collection", "relatedIdentifiers"],
+    //   data: {
+    //     "relatedIdentifierURI": "345678"
+    //   }
+    // },
     {
       path: ["collection", "collectionIdentifier"]
     },
@@ -711,7 +718,10 @@ class SchemaField extends React.Component {
       path: ["collection", "relatedIdentifiers", "@identifierSchemeURI"]
     },
     {
-      path: ["collection", "relatedIdentifiers", "@relationType"]
+      path: ["collection", "relatedIdentifiers"],
+      data: {
+        "relatedIdentifierURI": "345678",
+      }
     }
   ];
 
@@ -751,9 +761,35 @@ class SchemaField extends React.Component {
       console.log('denyListComparisonProcessed:');
       console.log(denyListComparisonProcessed);
 
-      const arrayMaskList = createArrayMaskList(allowListComparison);
-      console.log('Using the following arrayMaskList:');
-      console.log(arrayMaskList);
+      const arrayAllowMaskList = createArrayMaskList(allowListComparison);
+      console.log('Using the following arrayAllowMaskList:');
+      console.log(arrayAllowMaskList);
+      const arrayDenyMaskList = createArrayMaskList(denyListComparison);
+      console.log('Using the following arrayDenyMaskList:');
+      console.log(arrayDenyMaskList);
+      // Let deny always take precedence over allow:
+      let combinedArrayMaskList = null;
+      if (arrayAllowMaskList !== null && arrayDenyMaskList === null
+      ) {
+        combinedArrayMaskList = arrayAllowMaskList;
+      }
+      if (arrayAllowMaskList === null && arrayDenyMaskList !== null) {
+        combinedArrayMaskList = arrayDenyMaskList.map(element => !element);
+      }
+      if (
+        arrayAllowMaskList !== null &&
+        arrayDenyMaskList !== null &&
+        arrayAllowMaskList.length === arrayDenyMaskList.length
+      ) {
+        combinedArrayMaskList = arrayAllowMaskList.map((element, index) => {
+          // "true" in the allow array means "show this element," whereas "true"
+          // in the deny array means "hide this element."
+          return element === true &&
+            arrayDenyMaskList[index] !== true;
+        });
+      }
+      console.log('combinedArrayMaskList:');
+      console.log(combinedArrayMaskList);
       // console.log('this.props.idSchema.$path:');
       // console.log(this.props.idSchema.$path);
     // Allow if this is the root element or if the element is allowed, or is a
@@ -765,7 +801,7 @@ class SchemaField extends React.Component {
           allowListComparisonProcessed.some(isTrue) &&
           !denyListComparisonProcessed.some(isTrue)
         ) ?
-      SchemaFieldRender(this.props, arrayMaskList) :
+      SchemaFieldRender(this.props, combinedArrayMaskList) :
       null;
       // <DescriptionField
       //   id={this.props.idSchema.$id}
