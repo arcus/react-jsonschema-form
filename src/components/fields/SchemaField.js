@@ -210,6 +210,48 @@ function chunkMaskComparison(
   return comparisonOutput;
 }
 
+// arrayOfComparisons is expected to be an
+// array of arrays:
+function createArrayMaskList(arrayOfComparisons) {
+  if (!Array.isArray(arrayOfComparisons)) {
+    return null;
+  }
+
+  const individualArrayMasks = arrayOfComparisons.map(individualComparison => {
+    if (!Array.isArray(individualComparison[individualComparison.length - 1])) {
+      return [];
+    }
+    return individualComparison[individualComparison.length - 1];
+  });
+
+  if (
+    individualArrayMasks.length &&
+      // Make sure that all comparison arrays are, as expected, the same size:
+      individualArrayMasks.every(element => element.length &&
+        element.length === individualArrayMasks[0].length
+      )
+  ) {
+    // "Multiply" the individiual array masks together:
+    // true * true = true, false * false = false, true * false = false:
+    return individualArrayMasks.slice(1, individualArrayMasks.length).reduce(
+      (aggregator, currentComparison) => {
+        return aggregator.map((aggregatorElement, index) => {
+          return Boolean(aggregatorElement * currentComparison[index]);
+        });
+      },
+      [...individualArrayMasks[0]]
+    );
+  }
+  return null;
+}
+
+// console.log('createMaskList test:');
+// console.log(createArrayMaskList([
+//   [true, [true, false, false, true]],
+//   [true, [true, true, false, true]],
+//   [true, [true, true, false, false]]
+// ]));
+
 function getFieldComponent(schema, uiSchema, idSchema, fields) {
   const field = uiSchema["ui:field"];
   if (typeof field === "function") {
