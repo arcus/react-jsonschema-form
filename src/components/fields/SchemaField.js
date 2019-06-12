@@ -216,13 +216,23 @@ function createArrayMaskList(arrayOfComparisons) {
   if (!Array.isArray(arrayOfComparisons)) {
     return null;
   }
+  console.log(219);
+  console.log('arrayOfComparisons:');
+  console.log(arrayOfComparisons);
 
   const individualArrayMasks = arrayOfComparisons.map(individualComparison => {
+    console.log('individualComparison:');
+    console.log(individualComparison);
     if (!Array.isArray(individualComparison[individualComparison.length - 1])) {
+      console.log(223);
       return [];
     }
+    console.log(226);
     return individualComparison[individualComparison.length - 1];
-  });
+  }).filter(element => element.length);
+
+  console.log('individualArrayMasks, post-filtering:');
+  console.log(individualArrayMasks);
 
   if (
     individualArrayMasks.length &&
@@ -231,24 +241,33 @@ function createArrayMaskList(arrayOfComparisons) {
         element.length === individualArrayMasks[0].length
       )
   ) {
+    console.log(237);
     // "Multiply" the individiual array masks together:
     // true * true = true, false * false = false, true * false = false:
     return individualArrayMasks.slice(1, individualArrayMasks.length).reduce(
       (aggregator, currentComparison) => {
         return aggregator.map((aggregatorElement, index) => {
-          return Boolean(aggregatorElement * currentComparison[index]);
+          // return Boolean(aggregatorElement * currentComparison[index]);
+          return aggregatorElement === true ||
+            currentComparison[index] === true;
         });
       },
       [...individualArrayMasks[0]]
     );
   }
+  console.log(249);
   return null;
 }
 
-// console.log('createMaskList test:');
+console.log('createMaskList test:');
 // console.log(createArrayMaskList([
 //   [true, [true, false, false, true]],
 //   [true, [true, true, false, true]],
+//   [true, [true, true, false, false]]
+// ]));
+// console.log(createArrayMaskList([
+//   [true, [true, false, false, true]],
+//   [true, false],
 //   [true, [true, true, false, false]]
 // ]));
 
@@ -661,6 +680,12 @@ class SchemaField extends React.Component {
       }
     },
     {
+      path: ["collection", "relatedIdentifiers"],
+      data: {
+        "relatedIdentifierURI": "345678"
+      }
+    },
+    {
       path: ["collection", "collectionIdentifier"]
     },
     {
@@ -725,6 +750,10 @@ class SchemaField extends React.Component {
       );
       console.log('denyListComparisonProcessed:');
       console.log(denyListComparisonProcessed);
+
+      const arrayMaskList = createArrayMaskList(allowListComparison);
+      console.log('Using the following arrayMaskList:');
+      console.log(arrayMaskList);
       // console.log('this.props.idSchema.$path:');
       // console.log(this.props.idSchema.$path);
     // Allow if this is the root element or if the element is allowed, or is a
@@ -736,7 +765,7 @@ class SchemaField extends React.Component {
           allowListComparisonProcessed.some(isTrue) &&
           !denyListComparisonProcessed.some(isTrue)
         ) ?
-      SchemaFieldRender(this.props, [false, true]) :
+      SchemaFieldRender(this.props, arrayMaskList) :
       null;
       // <DescriptionField
       //   id={this.props.idSchema.$id}
