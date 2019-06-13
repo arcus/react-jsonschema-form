@@ -657,6 +657,8 @@ class ArrayField extends Component {
       onBlur,
       onFocus,
       rawErrors,
+      allowList,
+      denyList,
     } = props;
     const {
       disabled,
@@ -699,6 +701,8 @@ class ArrayField extends Component {
           readonly={this.props.readonly}
           autofocus={autofocus}
           rawErrors={rawErrors}
+          allowList={allowList}
+          denyList={denyList}
         />
       ),
       className: "array-item",

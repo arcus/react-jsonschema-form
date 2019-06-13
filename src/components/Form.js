@@ -22,6 +22,8 @@ export default class Form extends Component {
     safeRenderCompletion: false,
     noHtml5Validate: false,
     ErrorList: DefaultErrorList,
+    allowList: null,
+    denyList: null,
   };
 
   constructor(props) {
@@ -220,6 +222,8 @@ export default class Form extends Component {
       acceptcharset,
       noHtml5Validate,
       disabled,
+      allowList,
+      denyList,
     } = this.props;
 
     const { schema, uiSchema, formData, errorSchema, idSchema } = this.state;
@@ -256,6 +260,8 @@ export default class Form extends Component {
           registry={registry}
           safeRenderCompletion={safeRenderCompletion}
           disabled={disabled}
+          allowList={allowList}
+          denyList={denyList}
         />
         {children ? (
           children

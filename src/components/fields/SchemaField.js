@@ -657,85 +657,22 @@ class SchemaField extends React.Component {
     );
   }
 
-  allowList = [
-    // {
-    //   path: ["accession", "schemaVersionNumber"]
-    // },
-    // {
-    //   path: ["accession", "DCASigner", "affiliation"]
-    // },
-    // {
-    //   path: ["accession", "DCASigner", "contactInfo"],
-    //   data: { email: "test@example.com" }
-    // },
-    // {
-    //   path: ["accession", "accessionNumber"]
-    // }
-    // {
-    //   path: ["collection", "series", "participantList"],
-    //   data: {
-    //     participantListLocation: "a"
-    //   }
-    // },
-    {
-      path: ["collection", "relatedIdentifiers"],
-    },
-    // {
-    //   path: ["collection", "relatedIdentifiers"],
-    //   data: {
-    //     "relatedIdentifierURI": "123456"
-    //   }
-    // },
-    // {
-    //   path: ["collection", "relatedIdentifiers"],
-    //   data: {
-    //     "relatedIdentifierURI": "345678"
-    //   }
-    // },
-    {
-      path: ["collection", "collectionIdentifier"]
-    },
-    {
-      path: ["collection", "publisher"],
-      data: {
-        "@publisherIdentifierType": "grid"
-      }
-    }
-  ];
-
-  denyList = [
-    // {
-    //   path: ["accession", "schemaVersionNumber"]
-    // },
-    // {
-    //   path: ["accession", "DCASigner", "affiliation", "affiliationDivision"],
-    //   data: "external"
-    // }
-    {
-      path: ["collection", "series"]
-    },
-    {
-      path: ["collection", "relatedIdentifiers", "@identifierSchemeURI"]
-    },
-    {
-      path: ["collection", "relatedIdentifiers"],
-      data: {
-        "relatedIdentifierURI": "345678",
-      }
-    }
-  ];
-
   render() {
+    const {
+      allowList = null,
+      denyList = null,
+    } = this.props;
+
     console.log(`Now processing data path "${JSON.stringify(this.props.idSchema.$path)}"...`);
-    // if (this.denyList.includes(this.props.name)) {
+    // if (denyList.includes(this.props.name)) {
     //     console.log(this.props.idSchema);
     //   }
     // console.log(this.props.idSchema.$path);
     // console.log(this.props.formData);
-    // console.log(this.allowList);
+    // console.log(allowList);
     // console.log(this.props.idSchema.$path);
-    const allowListComparison = this.allowList ? performMaskComparison(
-      this.allowList,
+    const allowListComparison = allowList ? performMaskComparison(
+      allowList,
       this.props.idSchema,
       this.props.formData
     ) : [true];
@@ -744,9 +681,9 @@ class SchemaField extends React.Component {
     let allowListComparisonProcessed = chunkMaskComparison(allowListComparison, Array.isArray(this.props.formData));
     console.log('allowListComparisonProcessed:');
     console.log(allowListComparisonProcessed);
-    const denyListComparison = this.denyList ?
+    const denyListComparison = denyList ?
       allowListComparisonProcessed.some(isNullOrTrue) && performMaskComparison(
-        this.denyList,
+        denyList,
         this.props.idSchema,
         this.props.formData,
         true

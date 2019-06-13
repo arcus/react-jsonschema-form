@@ -189,6 +189,8 @@ class ObjectField extends Component {
       idPrefix,
       onBlur,
       onFocus,
+      allowList,
+      denyList,
       registry = getDefaultRegistry(),
     } = this.props;
     const { definitions, fields, formContext } = registry;
@@ -249,6 +251,8 @@ class ObjectField extends Component {
               disabled={disabled}
               readonly={readonly}
               onDropPropertyClick={this.onDropPropertyClick}
+              allowList={allowList}
+              denyList={denyList}
             />
           ),
           name,
