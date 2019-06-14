@@ -2,7 +2,7 @@ import { ADDITIONAL_PROPERTY_FLAG } from "../../utils";
 import IconButton from "../IconButton";
 import React from "react";
 import PropTypes from "prop-types";
-// import DescriptionField from './DescriptionField';
+import TableFieldPlaceholder from './TableFieldPlaceholder';
 import * as types from "../../types";
 
 import {
@@ -684,6 +684,12 @@ class SchemaField extends React.Component {
     const {
       allowList = null,
       denyList = null,
+      tableList = null,
+      uiSchema,
+      schema,
+      formData,
+      idSchema,
+      name,
     } = this.props;
 
     console.log(`Now processing data path "${JSON.stringify(this.props.idSchema.$path)}"...`);
@@ -699,6 +705,8 @@ class SchemaField extends React.Component {
       this.props.idSchema,
       this.props.formData
     ) : [true];
+    console.log('props:');
+    console.log(this.props);
     console.log('allowListComparison:');
     console.log(allowListComparison);
     let allowListComparisonProcessed = chunkMaskComparison(allowListComparison, Array.isArray(this.props.formData));
@@ -754,20 +762,51 @@ class SchemaField extends React.Component {
       // console.log(this.props.idSchema.$path);
     // Allow if this is the root element or if the element is allowed, or is a
     // parent of an allowed element:
-    return (
-      this.props.idSchema.$path && this.props.idSchema.$path.length === 0
-    ) ||
+    console.log('tableList is:');
+    console.log(tableList);
+    const renderFieldAsTable = tableList &&
+      Array.isArray(tableList) &&
+      tableList.map(element => {
+        return element.path &&
+          this.props.idSchema.$path.length ===
+          element.path.length &&
+          JSON.stringify(this.props.idSchema.$path) ===
+            JSON.stringify(element.path);
+      }).some(isTrue);
+
+    console.log('renderfieldastable:');
+    console.log(renderFieldAsTable);
+
+    if (renderFieldAsTable) {
+      const label =
+        uiSchema && uiSchema["ui:title"] || schema && schema.title || name || null;
+      const description =
+        uiSchema && uiSchema["ui:description"] ||
+        schema && schema.description || null;
+
+      return (
+        <TableFieldPlaceholder
+          id={idSchema.$id}
+          title={label}
+          description={description}
+          formData={formData}
+          onChange={() => {return;}}
+        />
+      );
+    }
+    if (
+      (
+        this.props.idSchema.$path && this.props.idSchema.$path.length === 0
+      ) ||
         (
           allowListComparisonProcessed.some(isTrue) &&
           !denyListComparisonProcessed.some(isTrue)
-        ) ?
-      SchemaFieldRender(this.props, combinedArrayMaskList) :
-      null;
-      // <DescriptionField
-      //   id={this.props.idSchema.$id}
-      //   description={`Placeholder for Path "${JSON.stringify(this.props.idSchema.$path)}", ID "${JSON.stringify(this.props.idSchema.$id)}".`}
-      //   onChange={() => {return;}}
-      // />;
+        )
+      ) {
+        return SchemaFieldRender(this.props, combinedArrayMaskList);
+      }
+
+    return null;
   }
 }
 

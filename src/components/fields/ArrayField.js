@@ -659,6 +659,7 @@ class ArrayField extends Component {
       rawErrors,
       allowList,
       denyList,
+      tableList,
     } = props;
     const {
       disabled,
@@ -703,6 +704,7 @@ class ArrayField extends Component {
           rawErrors={rawErrors}
           allowList={allowList}
           denyList={denyList}
+          tableList={tableList}
         />
       ),
       className: "array-item",
