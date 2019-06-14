@@ -790,7 +790,7 @@ class SchemaField extends React.Component {
           title={label}
           description={description}
           formData={formData}
-          onChange={() => {return;}}
+          arrayMask={combinedArrayMaskList}
         />
       );
     }
