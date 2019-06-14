@@ -34,6 +34,7 @@ function performMaskComparison(
   // Expected to be of the form: [
   //   {
   //     path: ["path", "one"]
+  //     id: optionalID (can also be used alongside data element)
   //   },
   //   {
   //     path: ["path", "with", "four", "elements"]
@@ -58,6 +59,10 @@ function performMaskComparison(
             idSchema.$path &&
             idSchema.$path[index]
           ) {
+            const maskListId = maskSubList.id ?
+                maskSubList.id :
+                null;
+
             const maskListData = maskSubList.data ?
                 maskSubList.data :
                 null;
@@ -122,9 +127,13 @@ function performMaskComparison(
               if (Array.isArray(formData)) {
                 console.log("Processing formData as array...");
                 const matchingElements = formData.map(element => {
-                  return JSON.stringify(
-                    mergeObjects(element, maskListData)
-                  ) === JSON.stringify(element);
+                  return (
+                    maskListId === null ||
+                      maskListId === idSchema.$id
+                  ) &&
+                    JSON.stringify(
+                      mergeObjects(element, maskListData)
+                    ) === JSON.stringify(element);
                 });
                 console.log('matchingElements:');
                 console.log(matchingElements);
@@ -136,12 +145,20 @@ function performMaskComparison(
                 // ) === JSON.stringify(formData);
               }
               if (typeof maskListData === "object") {
-                return JSON.stringify(
-                  mergeObjects(formData, maskListData)
-                ) === JSON.stringify(formData);
+                return (
+                  maskListId === null ||
+                    maskListId === idSchema.$id
+                ) &&
+                  JSON.stringify(
+                    mergeObjects(formData, maskListData)
+                  ) === JSON.stringify(formData);
               }
               // Handle, for example, strings:
-              return JSON.stringify(maskListData) ===
+              return (
+                maskListId === null ||
+                  maskListId === idSchema.$id
+              ) &&
+                JSON.stringify(maskListData) ===
                   JSON.stringify(formData);
             }
 
@@ -152,12 +169,18 @@ function performMaskComparison(
               // doesPathElementMatch below, we should always return false
               // here, to indicate not to deny this element:
               if (isThisFullPath) {
-                return true;
+                return maskListId === null ||
+                    maskListId === idSchema.$id;
+                // return true;
               }
 
               return false;
             }
-            return deny ? false : doesPathElementMatch;
+            return deny ? false : (
+              maskListId === null ||
+                maskListId === idSchema.$id
+            ) &&
+              doesPathElementMatch;
           }
           return null;
         }
