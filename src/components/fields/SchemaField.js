@@ -690,14 +690,12 @@ class SchemaField extends React.Component {
       description,
       alternativeComponent = null,
       tableList = null,
-      uiSchema,
-      schema,
       formData,
-      idSchema,
-      name,
     } = this.props;
 
     console.log(`Now processing data path "${JSON.stringify(this.props.idSchema.$path)}"...`);
+    console.log('Props passed to the component:');
+    console.log(this.props);
     // if (denyList.includes(this.props.name)) {
     //     console.log(this.props.idSchema);
     //   }
@@ -762,44 +760,6 @@ class SchemaField extends React.Component {
     console.log('combinedArrayMaskList:');
     console.log(combinedArrayMaskList);
 
-    let childToRender = null;
-
-    let descriptionToReturn = null;
-    if (description && typeof description === "string") {
-      descriptionToReturn = (
-        <p id={id} className="field-description">
-          {description}
-        </p>
-      );
-    } else if (description) {
-      descriptionToReturn = (
-        { description }
-      );
-    }
-
-    if (alternativeComponent) {
-      childToRender = (
-        <div id={id}>
-          {title && (
-            <TitleField
-              id={`${id}__title`}
-              title={title}
-            />
-          )}
-          {descriptionToReturn}
-          <div id={id} className="field-description">
-            {description}
-            <p className="field-description">
-              This field is being rendered as a table.
-            </p>
-            <alternativeComponent id={id} formData={formData} />
-          </div>
-        </div>
-      )
-    }
-    
-    // Allow if this is the root element or if the element is allowed, or is a
-    // parent of an allowed element:
     console.log('tableList is:');
     console.log(tableList);
     const renderFieldAsTable = tableList &&
@@ -811,24 +771,54 @@ class SchemaField extends React.Component {
           JSON.stringify(this.props.idSchema.$path) ===
           JSON.stringify(element.path);
       }).some(isTrue);
+    
+    // Allow if this is the root element or if the element is allowed, or is a
+    // parent of an allowed element:
 
     console.log('renderfieldastable:');
     console.log(renderFieldAsTable);
 
-    if (renderFieldAsTable && alternativeComponent) {
-      const label =
-        uiSchema && uiSchema["ui:title"] || schema && schema.title || name || null;
-      const description =
-        uiSchema && uiSchema["ui:description"] ||
-        schema && schema.description || null;
+    if (renderFieldAsTable) {
+      if (alternativeComponent) {
+        console.log('Rendering field as alternativeComponent...');
+        let descriptionToReturn = null;
+        if (description && typeof description === "string") {
+          descriptionToReturn = (
+            <p id={id} className="field-description">
+              {description}
+            </p>
+          );
+        } else if (description) {
+          descriptionToReturn = (
+            { description }
+          );
+        }
 
-      return (
-        <alternativeComponent
-          id={idSchema.$id}
-          formData={formData}
-          arrayMask={combinedArrayMaskList}
-        />
-      );
+        return (
+          <div id={id}>
+            {title && (
+              <TitleField
+                id={`${id}__title`}
+                title={`${title} THIS IS A TEST`}
+              />
+            )}
+            {descriptionToReturn}
+            <div id={id} className="field-description">
+              {description}
+              <p className="field-description">
+                This field is being rendered as a table.
+              </p>
+              <alternativeComponent
+                id={id}
+                formData={formData}
+                arrayMask={combinedArrayMaskList}
+              />
+            </div>
+          </div>
+        )
+      }
+
+      return null;
     }
     if (
       (

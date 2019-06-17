@@ -225,7 +225,11 @@ export default class Form extends Component {
       allowList,
       denyList,
       tableList,
+      alternativeComponent,
     } = this.props;
+
+    console.log('Props passed to the Form component:');
+    console.log(this.props);
 
     const { schema, uiSchema, formData, errorSchema, idSchema } = this.state;
     const registry = this.getRegistry();
@@ -264,6 +268,7 @@ export default class Form extends Component {
           allowList={allowList}
           denyList={denyList}
           tableList={tableList}
+          alternativeComponent={() => alternativeComponent}
         />
         {children ? (
           children
