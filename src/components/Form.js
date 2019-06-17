@@ -224,6 +224,7 @@ export default class Form extends Component {
       disabled,
       allowList,
       denyList,
+      tableList,
     } = this.props;
 
     const { schema, uiSchema, formData, errorSchema, idSchema } = this.state;
@@ -262,6 +263,7 @@ export default class Form extends Component {
           disabled={disabled}
           allowList={allowList}
           denyList={denyList}
+          tableList={tableList}
         />
         {children ? (
           children
@@ -312,5 +314,8 @@ if (process.env.NODE_ENV !== "production") {
     formContext: PropTypes.object,
     customFormats: PropTypes.object,
     additionalMetaSchemas: PropTypes.arrayOf(PropTypes.object),
+    allowList: PropTypes.array,
+    denyList: PropTypes.array,
+    tableList: PropTypes.array,
   };
 }

@@ -2,6 +2,7 @@ import { ADDITIONAL_PROPERTY_FLAG } from "../../utils";
 import IconButton from "../IconButton";
 import React from "react";
 import PropTypes from "prop-types";
+import TitleField from "./TitleField";
 // import DescriptionField from './DescriptionField';
 import * as types from "../../types";
 
@@ -684,6 +685,16 @@ class SchemaField extends React.Component {
     const {
       allowList = null,
       denyList = null,
+      id,
+      title,
+      description,
+      alternativeComponent = null,
+      tableList = null,
+      uiSchema,
+      schema,
+      formData,
+      idSchema,
+      name,
     } = this.props;
 
     console.log(`Now processing data path "${JSON.stringify(this.props.idSchema.$path)}"...`);
@@ -711,63 +722,127 @@ class SchemaField extends React.Component {
         this.props.formData,
         true
       ) : [false];
-      console.log('denyListComparison:');
-      console.log(denyListComparison);
-      const denyListComparisonProcessed = chunkMaskComparison(
-        denyListComparison,
-        Array.isArray(this.props.formData),
-        true
-      );
-      console.log('denyListComparisonProcessed:');
-      console.log(denyListComparisonProcessed);
+    console.log('denyListComparison:');
+    console.log(denyListComparison);
+    const denyListComparisonProcessed = chunkMaskComparison(
+      denyListComparison,
+      Array.isArray(this.props.formData),
+      true
+    );
+    console.log('denyListComparisonProcessed:');
+    console.log(denyListComparisonProcessed);
 
-      const arrayAllowMaskList = createArrayMaskList(allowListComparison);
-      console.log('Using the following arrayAllowMaskList:');
-      console.log(arrayAllowMaskList);
-      const arrayDenyMaskList = createArrayMaskList(denyListComparison);
-      console.log('Using the following arrayDenyMaskList:');
-      console.log(arrayDenyMaskList);
-      // Let deny always take precedence over allow:
-      let combinedArrayMaskList = null;
-      if (arrayAllowMaskList !== null && arrayDenyMaskList === null
-      ) {
-        combinedArrayMaskList = arrayAllowMaskList;
-      }
-      if (arrayAllowMaskList === null && arrayDenyMaskList !== null) {
-        combinedArrayMaskList = arrayDenyMaskList.map(element => !element);
-      }
-      if (
-        arrayAllowMaskList !== null &&
-        arrayDenyMaskList !== null &&
-        arrayAllowMaskList.length === arrayDenyMaskList.length
-      ) {
-        combinedArrayMaskList = arrayAllowMaskList.map((element, index) => {
-          // "true" in the allow array means "show this element," whereas "true"
-          // in the deny array means "hide this element."
-          return element === true &&
-            arrayDenyMaskList[index] !== true;
-        });
-      }
-      console.log('combinedArrayMaskList:');
-      console.log(combinedArrayMaskList);
-      // console.log('this.props.idSchema.$path:');
-      // console.log(this.props.idSchema.$path);
+    const arrayAllowMaskList = createArrayMaskList(allowListComparison);
+    console.log('Using the following arrayAllowMaskList:');
+    console.log(arrayAllowMaskList);
+    const arrayDenyMaskList = createArrayMaskList(denyListComparison);
+    console.log('Using the following arrayDenyMaskList:');
+    console.log(arrayDenyMaskList);
+    // Let deny always take precedence over allow:
+    let combinedArrayMaskList = null;
+    if (arrayAllowMaskList !== null && arrayDenyMaskList === null
+    ) {
+      combinedArrayMaskList = arrayAllowMaskList;
+    }
+    if (arrayAllowMaskList === null && arrayDenyMaskList !== null) {
+      combinedArrayMaskList = arrayDenyMaskList.map(element => !element);
+    }
+    if (
+      arrayAllowMaskList !== null &&
+      arrayDenyMaskList !== null &&
+      arrayAllowMaskList.length === arrayDenyMaskList.length
+    ) {
+      combinedArrayMaskList = arrayAllowMaskList.map((element, index) => {
+        // "true" in the allow array means "show this element," whereas "true"
+        // in the deny array means "hide this element."
+        return element === true &&
+          arrayDenyMaskList[index] !== true;
+      });
+    }
+    console.log('combinedArrayMaskList:');
+    console.log(combinedArrayMaskList);
+
+    let childToRender = null;
+
+    let descriptionToReturn = null;
+    if (description && typeof description === "string") {
+      descriptionToReturn = (
+        <p id={id} className="field-description">
+          {description}
+        </p>
+      );
+    } else if (description) {
+      descriptionToReturn = (
+        { description }
+      );
+    }
+
+    if (alternativeComponent) {
+      childToRender = (
+        <div id={id}>
+          {title && (
+            <TitleField
+              id={`${id}__title`}
+              title={title}
+            />
+          )}
+          {descriptionToReturn}
+          <div id={id} className="field-description">
+            {description}
+            <p className="field-description">
+              This field is being rendered as a table.
+            </p>
+            <alternativeComponent id={id} formData={formData} />
+          </div>
+        </div>
+      )
+    }
+    
     // Allow if this is the root element or if the element is allowed, or is a
     // parent of an allowed element:
-    return (
-      this.props.idSchema.$path && this.props.idSchema.$path.length === 0
-    ) ||
-        (
-          allowListComparisonProcessed.some(isTrue) &&
-          !denyListComparisonProcessed.some(isTrue)
-        ) ?
-      SchemaFieldRender(this.props, combinedArrayMaskList) :
-      null;
-      // <DescriptionField
-      //   id={this.props.idSchema.$id}
-      //   description={`Placeholder for Path "${JSON.stringify(this.props.idSchema.$path)}", ID "${JSON.stringify(this.props.idSchema.$id)}".`}
-      //   onChange={() => {return;}}
-      // />;
+    console.log('tableList is:');
+    console.log(tableList);
+    const renderFieldAsTable = tableList &&
+      Array.isArray(tableList) &&
+      tableList.map(element => {
+        return element.path &&
+          this.props.idSchema.$path.length ===
+          element.path.length &&
+          JSON.stringify(this.props.idSchema.$path) ===
+          JSON.stringify(element.path);
+      }).some(isTrue);
+
+    console.log('renderfieldastable:');
+    console.log(renderFieldAsTable);
+
+    if (renderFieldAsTable && alternativeComponent) {
+      const label =
+        uiSchema && uiSchema["ui:title"] || schema && schema.title || name || null;
+      const description =
+        uiSchema && uiSchema["ui:description"] ||
+        schema && schema.description || null;
+
+      return (
+        <alternativeComponent
+          id={idSchema.$id}
+          formData={formData}
+          arrayMask={combinedArrayMaskList}
+        />
+      );
+    }
+    if (
+      (
+        this.props.idSchema.$path && this.props.idSchema.$path.length === 0
+      ) ||
+      (
+        allowListComparisonProcessed.some(isTrue) &&
+        !denyListComparisonProcessed.some(isTrue)
+      )
+    ) {
+      return SchemaFieldRender(this.props, combinedArrayMaskList);
+    }
+
+    return null;
   }
 }
 

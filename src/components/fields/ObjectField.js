@@ -191,6 +191,7 @@ class ObjectField extends Component {
       onFocus,
       allowList,
       denyList,
+      tableList,
       registry = getDefaultRegistry(),
     } = this.props;
     const { definitions, fields, formContext } = registry;
@@ -253,6 +254,7 @@ class ObjectField extends Component {
               onDropPropertyClick={this.onDropPropertyClick}
               allowList={allowList}
               denyList={denyList}
+              tableList={tableList}
             />
           ),
           name,
