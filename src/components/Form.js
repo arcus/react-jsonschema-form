@@ -268,7 +268,7 @@ export default class Form extends Component {
           allowList={allowList}
           denyList={denyList}
           tableList={tableList}
-          alternativeComponent={() => alternativeComponent}
+          alternativeComponent={alternativeComponent}
         />
         {children ? (
           children
